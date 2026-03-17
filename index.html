@@ -1,1366 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>User Manual — Working with Aleks</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
-
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-:root {
-  --bg: #0a0a0b;
-  --bg-card: #141416;
-  --bg-card-hover: #1a1a1e;
-  --text: #f0f0f2;
-  --text-dim: #8a8a96;
-  --text-muted: #55555f;
-  --accent: #4a9eff;
-  --accent-dim: #2a6ecc;
-  --red: #ff4a6a;
-  --red-dim: rgba(255, 74, 106, 0.12);
-  --green: #34d399;
-  --green-dim: rgba(52, 211, 153, 0.12);
-  --yellow: #fbbf24;
-  --yellow-dim: rgba(251, 191, 36, 0.12);
-  --border: #1e1e24;
-  --slide-padding: 80px;
-}
-
-html, body {
-  width: 100%; height: 100%;
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Inter', -apple-system, sans-serif;
-  overflow: hidden;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ── Canvas Background ── */
-canvas#bg-canvas {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* ── Slide System ── */
-.deck {
-  position: relative;
-  width: 100%; height: 100vh;
-  z-index: 1;
-}
-
-.slide {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: var(--slide-padding);
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-  pointer-events: none;
-  visibility: hidden;
-}
-
-.slide.active {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-  visibility: visible;
-}
-
-.slide.exit-up {
-  opacity: 0;
-  transform: translateY(-30px);
-}
-
-/* ── Navigation ── */
-.nav-dots {
-  position: fixed;
-  right: 32px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  z-index: 100;
-}
-
-.nav-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--text-muted);
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  padding: 0;
-  position: relative;
-}
-
-.nav-dot:hover { background: var(--text-dim); transform: scale(1.3); }
-.nav-dot.active { background: var(--accent); transform: scale(1.4); }
-
-.nav-dot .tooltip {
-  position: absolute;
-  right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  color: var(--text-dim);
-  font-size: 11px;
-  padding: 4px 10px;
-  border-radius: 6px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s;
-}
-
-.nav-dot:hover .tooltip { opacity: 1; }
-
-.slide-counter {
-  position: fixed;
-  bottom: 28px;
-  right: 32px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
-  color: var(--text-muted);
-  z-index: 100;
-  letter-spacing: 1px;
-}
-
-/* ── Typography ── */
-h1 {
-  font-size: clamp(42px, 5vw, 64px);
-  font-weight: 800;
-  letter-spacing: -1.5px;
-  line-height: 1.1;
-  margin-bottom: 24px;
-}
-
-h2 {
-  font-size: clamp(28px, 3vw, 40px);
-  font-weight: 700;
-  letter-spacing: -1px;
-  line-height: 1.15;
-  margin-bottom: 32px;
-}
-
-h3 {
-  font-size: 14px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  color: var(--accent);
-  margin-bottom: 16px;
-}
-
-p, li {
-  font-size: 18px;
-  line-height: 1.6;
-  color: var(--text-dim);
-}
-
-.subtitle {
-  font-size: clamp(18px, 2vw, 24px);
-  color: var(--text-dim);
-  font-weight: 300;
-  line-height: 1.5;
-  max-width: 700px;
-}
-
-.quote {
-  font-size: clamp(20px, 2.5vw, 28px);
-  font-weight: 300;
-  font-style: italic;
-  color: var(--text);
-  border-left: 3px solid var(--accent);
-  padding-left: 24px;
-  margin: 24px 0;
-  max-width: 650px;
-}
-
-.mono {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 14px;
-  color: var(--accent);
-}
-
-/* ── Slide 1: Title ── */
-.title-slide { align-items: center; text-align: center; }
-
-.title-slide h1 {
-  font-size: clamp(48px, 6vw, 80px);
-  margin-bottom: 12px;
-}
-
-.title-name {
-  display: inline-block;
-  position: relative;
-}
-
-.title-name::after {
-  content: '';
-  position: absolute;
-  bottom: -4px; left: 0;
-  width: 0; height: 3px;
-  background: var(--accent);
-  transition: width 0.8s ease 1s;
-}
-
-.slide.active .title-name::after { width: 100%; }
-
-.title-quotes {
-  margin-top: 48px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.title-quote-line {
-  font-size: clamp(16px, 1.8vw, 22px);
-  color: var(--text-dim);
-  font-weight: 300;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: all 0.5s ease;
-}
-
-.slide.active .title-quote-line:nth-child(1) { opacity: 1; transform: translateY(0); transition-delay: 0.6s; }
-.slide.active .title-quote-line:nth-child(2) { opacity: 1; transform: translateY(0); transition-delay: 1.0s; }
-.slide.active .title-quote-line:nth-child(3) { opacity: 1; transform: translateY(0); transition-delay: 1.4s; }
-
-/* ── Slide 2: Ground Rules — Progressive Build ── */
-.rules-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  max-width: 800px;
-}
-
-.rule-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 20px;
-  padding: 20px 24px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  opacity: 0;
-  transform: translateX(-20px);
-  transition: all 0.5s ease;
-}
-
-.rule-item.visible {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.rule-number {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--accent);
-  min-width: 36px;
-}
-
-.rule-content h4 {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.rule-content p {
-  font-size: 15px;
-  color: var(--text-dim);
-}
-
-/* ── Slide 3: Decisions — Flow ── */
-.decision-flow {
-  display: flex;
-  gap: 24px;
-  margin-bottom: 40px;
-}
-
-.decision-card {
-  flex: 1;
-  padding: 28px 24px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  text-align: center;
-  opacity: 0;
-  transform: scale(0.95);
-  transition: all 0.5s ease;
-  cursor: default;
-}
-
-.decision-card.visible { opacity: 1; transform: scale(1); }
-.decision-card:hover { border-color: var(--accent-dim); background: var(--bg-card-hover); }
-
-.decision-icon {
-  font-size: 36px;
-  margin-bottom: 16px;
-}
-
-.decision-card h4 {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.decision-card p {
-  font-size: 14px;
-  color: var(--text-dim);
-  line-height: 1.5;
-}
-
-.decision-card .tag {
-  display: inline-block;
-  margin-top: 12px;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.tag-fast { background: var(--green-dim); color: var(--green); }
-.tag-pause { background: var(--yellow-dim); color: var(--yellow); }
-.tag-slow { background: var(--red-dim); color: var(--red); }
-
-.change-mind {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 24px 28px;
-  max-width: 700px;
-}
-
-.change-mind h4 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 12px;
-  color: var(--text);
-}
-
-.change-mind li {
-  font-size: 15px;
-  color: var(--text-dim);
-  margin-bottom: 6px;
-  padding-left: 4px;
-  list-style: none;
-  position: relative;
-}
-
-.change-mind li::before {
-  content: '→';
-  color: var(--accent);
-  margin-right: 10px;
-}
-
-/* ── Slide 4: Communication ── */
-.comm-columns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  max-width: 900px;
-}
-
-.comm-box {
-  padding: 28px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-}
-
-.comm-box.works { border-top: 3px solid var(--green); }
-.comm-box.fails { border-top: 3px solid var(--red); }
-
-.comm-box h4 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 16px;
-}
-
-.comm-box.works h4 { color: var(--green); }
-.comm-box.fails h4 { color: var(--red); }
-
-.comm-box li {
-  font-size: 15px;
-  color: var(--text-dim);
-  margin-bottom: 8px;
-  list-style: none;
-  padding-left: 20px;
-  position: relative;
-}
-
-.comm-box.works li::before { content: '✓'; position: absolute; left: 0; color: var(--green); font-weight: 700; }
-.comm-box.fails li::before { content: '✗'; position: absolute; left: 0; color: var(--red); font-weight: 700; }
-
-.feedback-note {
-  margin-top: 24px;
-  padding: 20px 24px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
-  border-radius: 0 12px 12px 0;
-  max-width: 900px;
-}
-
-.feedback-note p {
-  font-size: 15px;
-  color: var(--text-dim);
-}
-
-.feedback-note strong { color: var(--text); }
-
-/* ── Slide 5: Flip Cards — Can't Stand / Earn Respect ── */
-.flip-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  max-width: 960px;
-}
-
-.flip-card {
-  perspective: 800px;
-  height: 180px;
-  cursor: pointer;
-}
-
-.flip-card-inner {
-  position: relative;
-  width: 100%; height: 100%;
-  transition: transform 0.6s ease;
-  transform-style: preserve-3d;
-}
-
-.flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
-
-.flip-front, .flip-back {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  backface-visibility: hidden;
-  border-radius: 12px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  border: 1px solid var(--border);
-}
-
-.flip-front {
-  background: var(--bg-card);
-  border-top: 3px solid var(--red);
-}
-
-.flip-back {
-  background: var(--bg-card);
-  border-top: 3px solid var(--green);
-  transform: rotateY(180deg);
-}
-
-.flip-front .flip-icon { color: var(--red); font-size: 20px; margin-bottom: 10px; }
-.flip-back .flip-icon { color: var(--green); font-size: 20px; margin-bottom: 10px; }
-
-.flip-front p, .flip-back p {
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.flip-front p { color: var(--text-dim); }
-.flip-back p { color: var(--text-dim); }
-
-.flip-hint {
-  text-align: center;
-  margin-top: 20px;
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-.flip-legend {
-  display: flex;
-  gap: 24px;
-  margin-bottom: 24px;
-}
-
-.flip-legend span {
-  font-size: 13px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.legend-dot {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-.legend-dot.red { background: var(--red); }
-.legend-dot.green { background: var(--green); }
-
-/* ── Slide 6: Initiative & Delegation ── */
-.init-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
-  max-width: 950px;
-}
-
-.init-block {
-  padding: 28px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-}
-
-.init-block h4 {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 16px;
-  color: var(--text);
-}
-
-.init-block li {
-  font-size: 15px;
-  color: var(--text-dim);
-  margin-bottom: 10px;
-  list-style: none;
-  padding-left: 20px;
-  position: relative;
-}
-
-.init-block li::before {
-  content: '▸';
-  position: absolute;
-  left: 0;
-  color: var(--accent);
-}
-
-.init-highlight {
-  margin-top: 16px;
-  padding: 14px 18px;
-  background: rgba(74, 158, 255, 0.06);
-  border: 1px solid rgba(74, 158, 255, 0.15);
-  border-radius: 8px;
-  font-size: 15px;
-  color: var(--text);
-  font-weight: 400;
-}
-
-/* ── Slide 7: Energy & Rhythm ── */
-.energy-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 20px;
-  max-width: 960px;
-}
-
-.energy-card {
-  padding: 24px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  position: relative;
-  overflow: hidden;
-}
-
-.energy-card h4 {
-  font-size: 15px;
-  font-weight: 600;
-  margin-bottom: 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.energy-card li {
-  font-size: 14px;
-  color: var(--text-dim);
-  margin-bottom: 8px;
-  list-style: none;
-  padding-left: 16px;
-  position: relative;
-}
-
-.energy-card li::before {
-  position: absolute;
-  left: 0;
-}
-
-.energy-peak li::before { content: '◆'; color: var(--green); font-size: 8px; top: 4px; }
-.energy-drivers li::before { content: '◆'; color: var(--accent); font-size: 8px; top: 4px; }
-.energy-killers li::before { content: '◆'; color: var(--red); font-size: 8px; top: 4px; }
-
-.energy-peak { border-top: 3px solid var(--green); }
-.energy-drivers { border-top: 3px solid var(--accent); }
-.energy-killers { border-top: 3px solid var(--red); }
-
-/* ── Slide 8: Stress & Conflicts ── */
-.stress-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 28px;
-  max-width: 900px;
-}
-
-.stress-block {
-  padding: 28px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-}
-
-.stress-block h4 {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 16px;
-}
-
-.stress-block li {
-  font-size: 15px;
-  color: var(--text-dim);
-  margin-bottom: 10px;
-  list-style: none;
-  padding-left: 20px;
-  position: relative;
-}
-
-.stress-block li::before {
-  content: '—';
-  position: absolute;
-  left: 0;
-  color: var(--text-muted);
-}
-
-.stress-block .key-point {
-  margin-top: 16px;
-  padding: 12px 16px;
-  background: rgba(74, 158, 255, 0.06);
-  border-left: 3px solid var(--accent);
-  border-radius: 0 8px 8px 0;
-  font-size: 14px;
-  color: var(--text);
-}
-
-/* ── Slide 9: Shadow Sides ── */
-.shadow-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  max-width: 960px;
-}
-
-.shadow-card {
-  padding: 24px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  cursor: default;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.shadow-card:hover {
-  border-color: var(--accent-dim);
-  background: var(--bg-card-hover);
-}
-
-.shadow-card h4 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-.shadow-card .shadow-brief {
-  font-size: 14px;
-  color: var(--text-dim);
-  line-height: 1.5;
-}
-
-.shadow-card .shadow-detail {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-  font-size: 13px;
-  color: var(--text-muted);
-  line-height: 1.5;
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: all 0.4s ease;
-}
-
-.shadow-card:hover .shadow-detail {
-  max-height: 80px;
-  opacity: 1;
-}
-
-.shadow-label {
-  display: inline-block;
-  margin-bottom: 20px;
-  padding: 6px 14px;
-  background: rgba(74, 158, 255, 0.08);
-  border: 1px solid rgba(74, 158, 255, 0.15);
-  border-radius: 20px;
-  font-size: 13px;
-  color: var(--accent);
-  font-weight: 500;
-}
-
-/* ── Slide 10: Closing ── */
-.closing-slide {
-  align-items: center;
-  text-align: center;
-}
-
-.values-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
-  max-width: 800px;
-  margin-top: 32px;
-}
-
-.value-chip {
-  padding: 10px 20px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 40px;
-  font-size: 15px;
-  color: var(--text-dim);
-  opacity: 0;
-  transform: translateY(10px);
-  transition: all 0.4s ease;
-}
-
-.value-chip.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.value-chip:hover {
-  border-color: var(--accent-dim);
-  color: var(--text);
-}
-
-.closing-callback {
-  margin-top: 48px;
-  opacity: 0;
-  transition: opacity 0.8s ease 2.5s;
-}
-
-.slide.active .closing-callback { opacity: 1; }
-
-.closing-callback p {
-  font-size: 18px;
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-/* ── Keyboard hint ── */
-.key-hint {
-  position: fixed;
-  bottom: 28px;
-  left: 32px;
-  font-size: 12px;
-  color: var(--text-muted);
-  z-index: 100;
-  display: flex;
-  gap: 16px;
-  align-items: center;
-}
-
-.key-hint kbd {
-  display: inline-block;
-  padding: 2px 8px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--text-dim);
-}
-
-/* ── Animation helpers ── */
-.fade-in {
-  opacity: 0;
-  transform: translateY(12px);
-  transition: all 0.5s ease;
-}
-
-.slide.active .fade-in { opacity: 1; transform: translateY(0); }
-.slide.active .fade-in:nth-child(1) { transition-delay: 0.1s; }
-.slide.active .fade-in:nth-child(2) { transition-delay: 0.25s; }
-.slide.active .fade-in:nth-child(3) { transition-delay: 0.4s; }
-.slide.active .fade-in:nth-child(4) { transition-delay: 0.55s; }
-
-/* ── Responsive ── */
-@media (max-width: 900px) {
-  :root { --slide-padding: 40px; }
-  .flip-grid { grid-template-columns: repeat(2, 1fr); }
-  .decision-flow { flex-direction: column; }
-  .comm-columns, .init-layout, .stress-layout { grid-template-columns: 1fr; }
-  .energy-layout { grid-template-columns: 1fr; }
-  .shadow-grid { grid-template-columns: 1fr 1fr; }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALEKS — Presentations</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0b;
+            color: #e0e0e0;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Header */
+        header {
+            padding: 48px 0 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .brand {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 20px;
+            font-weight: 500;
+            color: #4a9eff;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #666;
+            font-weight: 400;
+        }
+
+        /* Sections */
+        section {
+            padding: 40px 0;
+        }
+
+        .section-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 500;
+            color: #555;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        /* Cards */
+        .card {
+            display: block;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            padding: 24px 28px;
+            text-decoration: none;
+            color: inherit;
+            transition: background 0.2s ease, border-color 0.2s ease;
+            margin-bottom: 12px;
+        }
+
+        .card:hover {
+            background: rgba(74, 158, 255, 0.04);
+            border-color: rgba(74, 158, 255, 0.15);
+        }
+
+        .card-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #f0f0f0;
+            margin-bottom: 6px;
+        }
+
+        .card-description {
+            font-size: 14px;
+            color: #777;
+            line-height: 1.5;
+        }
+
+        .card-arrow {
+            float: right;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            color: #4a9eff;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            margin-top: 4px;
+        }
+
+        .card:hover .card-arrow {
+            opacity: 1;
+        }
+
+        /* Footer */
+        footer {
+            padding: 40px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            text-align: center;
+        }
+
+        footer p {
+            font-size: 13px;
+            color: #444;
+        }
+
+        /* Mobile */
+        @media (max-width: 600px) {
+            header {
+                padding: 32px 0 28px;
+            }
+
+            section {
+                padding: 28px 0;
+            }
+
+            .card {
+                padding: 20px 22px;
+            }
+
+            .card-arrow {
+                opacity: 1;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <header>
+            <div class="brand">ALEKS</div>
+            <div class="subtitle">Presentations &amp; Documents</div>
+        </header>
 
-<canvas id="bg-canvas"></canvas>
+        <section>
+            <div class="section-title">Personal</div>
+            <a class="card" href="user-manual.html">
+                <span class="card-arrow">&rarr;</span>
+                <div class="card-title">User Manual: Working with Aleks</div>
+                <div class="card-description">Personal onboarding guide for new team members — communication style, decision-making, work preferences, and how to collaborate effectively.</div>
+            </a>
+        </section>
 
-<!-- Navigation -->
-<div class="nav-dots" id="navDots"></div>
-<div class="slide-counter" id="slideCounter">1 / 10</div>
-<div class="key-hint">
-  <span><kbd>←</kbd> <kbd>→</kbd> navigate</span>
-  <span><kbd>Space</kbd> next</span>
-</div>
-
-<div class="deck" id="deck">
-
-  <!-- ═══ SLIDE 1: Title ═══ -->
-  <div class="slide title-slide active" data-title="Title">
-    <h3>User Manual</h3>
-    <h1>Working with <span class="title-name">Aleks</span></h1>
-    <div class="title-quotes">
-      <div class="title-quote-line">A CEO with no smoke and mirrors.</div>
-      <div class="title-quote-line">No time for BS. Laser-focused on what matters.</div>
-      <div class="title-quote-line">The more important — the sharper the focus.</div>
+        <footer>
+            <p>&copy; 2026 Aleks Barafanov</p>
+        </footer>
     </div>
-  </div>
-
-  <!-- ═══ SLIDE 2: Ground Rules ═══ -->
-  <div class="slide" data-title="Ground Rules">
-    <h3>The Foundation</h3>
-    <h2>Ground Rules</h2>
-    <div class="rules-grid" id="rulesGrid">
-      <div class="rule-item" data-index="0">
-        <span class="rule-number">01</span>
-        <div class="rule-content">
-          <h4>Be clear.</h4>
-          <p>Start with "It's hard to explain but…" and you've already lost.</p>
-        </div>
-      </div>
-      <div class="rule-item" data-index="1">
-        <span class="rule-number">02</span>
-        <div class="rule-content">
-          <h4>Put it in the calendar.</h4>
-          <p>No calendar invite = it doesn't exist. Late without notice = you're not serious.</p>
-        </div>
-      </div>
-      <div class="rule-item" data-index="2">
-        <span class="rule-number">03</span>
-        <div class="rule-content">
-          <h4>Speak up.</h4>
-          <p>Screwed up? Changed course? Say it. Silence kills trust.</p>
-        </div>
-      </div>
-      <div class="rule-item" data-index="3">
-        <span class="rule-number">04</span>
-        <div class="rule-content">
-          <h4>Trust is an upfront investment.</h4>
-          <p>Given by default — then watched closely. Trust loss is targeted, not generalized.</p>
-        </div>
-      </div>
-      <div class="rule-item" data-index="4">
-        <span class="rule-number">05</span>
-        <div class="rule-content">
-          <h4>Bottom line up front.</h4>
-          <p>Lead with the conclusion. Context comes second — only if needed.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══ SLIDE 3: Decision Making ═══ -->
-  <div class="slide" data-title="Decisions">
-    <h3>How It Works</h3>
-    <h2>Decision Making</h2>
-    <div class="decision-flow" id="decisionFlow">
-      <div class="decision-card" data-index="0">
-        <div class="decision-icon">⚡</div>
-        <h4>Fast</h4>
-        <p>Clear, concise, and respectful of context. Decision comes immediately.</p>
-        <span class="tag tag-fast">Instant</span>
-      </div>
-      <div class="decision-card" data-index="1">
-        <div class="decision-icon">⏸</div>
-        <h4>1–2 Day Pause</h4>
-        <p>Strategic or emotionally loaded. Collects data, waits for clarity.</p>
-        <span class="tag tag-pause">Processing</span>
-      </div>
-      <div class="decision-card" data-index="2">
-        <div class="decision-icon">🔒</div>
-        <h4>Slow</h4>
-        <p>Sloppy input or "we'll figure it out later" kills momentum.</p>
-        <span class="tag tag-slow">Blocked</span>
-      </div>
-    </div>
-    <div class="change-mind fade-in" style="transition-delay: 0.8s;">
-      <h4>How to change his mind (he's stubborn, he knows it):</h4>
-      <ul>
-        <li>Show data or facts he hasn't seen</li>
-        <li>Present a completely different angle</li>
-        <li>Stay calm — let the argument work, not the pressure</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- ═══ SLIDE 4: Communication ═══ -->
-  <div class="slide" data-title="Communication">
-    <h3>Format Matters</h3>
-    <h2>Communication & Feedback</h2>
-    <div class="comm-columns fade-in">
-      <div class="comm-box works">
-        <h4>What Works</h4>
-        <ul>
-          <li>Bullet points and structured lists</li>
-          <li>Visual formats: charts, diagrams, tables</li>
-          <li>Bottom line up front</li>
-          <li>Clean formatting — it signals respect</li>
-        </ul>
-      </div>
-      <div class="comm-box fails">
-        <h4>What Doesn't</h4>
-        <ul>
-          <li>Long unstructured text blocks</li>
-          <li>Walls of information</li>
-          <li>Vague conclusions buried at the end</li>
-          <li>Messy docs — "I don't care" signal</li>
-        </ul>
-      </div>
-    </div>
-    <div class="feedback-note fade-in" style="transition-delay: 0.5s;">
-      <p><strong>Giving feedback:</strong> Always privately. Flag the issue, then give space. He needs time to process — absorbs first, then reacts. Worst move: confront publicly or demand instant response.</p>
-    </div>
-  </div>
-
-  <!-- ═══ SLIDE 5: Can't Stand / Earn Respect ═══ -->
-  <div class="slide" data-title="Respect">
-    <h3>Two Sides</h3>
-    <h2>Click to flip each card</h2>
-    <div class="flip-legend">
-      <span><span class="legend-dot red"></span> Can't Stand</span>
-      <span><span class="legend-dot green"></span> Earn Respect</span>
-    </div>
-    <div class="flip-grid">
-      <div class="flip-card" onclick="this.classList.toggle('flipped')">
-        <div class="flip-card-inner">
-          <div class="flip-front">
-            <div class="flip-icon">✗</div>
-            <p>Breaking promises and staying silent about it</p>
-          </div>
-          <div class="flip-back">
-            <div class="flip-icon">✓</div>
-            <p>Bring a solution, not just a problem</p>
-          </div>
-        </div>
-      </div>
-      <div class="flip-card" onclick="this.classList.toggle('flipped')">
-        <div class="flip-card-inner">
-          <div class="flip-front">
-            <div class="flip-icon">✗</div>
-            <p>Changing direction without a heads-up</p>
-          </div>
-          <div class="flip-back">
-            <div class="flip-icon">✓</div>
-            <p>Spot a mistake — and bring it up openly</p>
-          </div>
-        </div>
-      </div>
-      <div class="flip-card" onclick="this.classList.toggle('flipped')">
-        <div class="flip-card-inner">
-          <div class="flip-front">
-            <div class="flip-icon">✗</div>
-            <p>Gossip, whining, side chats, blame game</p>
-          </div>
-          <div class="flip-back">
-            <div class="flip-icon">✓</div>
-            <p>Disagree? Great — back it up with data</p>
-          </div>
-        </div>
-      </div>
-      <div class="flip-card" onclick="this.classList.toggle('flipped')">
-        <div class="flip-card-inner">
-          <div class="flip-front">
-            <div class="flip-icon">✗</div>
-            <p>Lies, deception, two-faced behavior</p>
-          </div>
-          <div class="flip-back">
-            <div class="flip-icon">✓</div>
-            <p>Show results. Be honest about weaknesses.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="flip-hint">Click any card to see the other side</div>
-  </div>
-
-  <!-- ═══ SLIDE 6: Initiative & Delegation ═══ -->
-  <div class="slide" data-title="Ownership">
-    <h3>How We Work</h3>
-    <h2>Initiative & Delegation</h2>
-    <div class="init-layout fade-in">
-      <div class="init-block">
-        <h4>On Initiative</h4>
-        <ul>
-          <li>Think before asking</li>
-          <li>Suggest improvements</li>
-          <li>Push things forward on your own</li>
-        </ul>
-        <div class="init-highlight">
-          If you burn bright — without burning others — you're in. He mentors. He invests. Not in the quiet ones. In the real ones.
-        </div>
-      </div>
-      <div class="init-block">
-        <h4>Delegation Protocol</h4>
-        <ul>
-          <li>Ask questions immediately if unclear</li>
-          <li>Agree on a deadline — no deadline = no task</li>
-          <li>Won't make it? Say it EARLY, not last moment</li>
-          <li>Include: why + new deadline</li>
-          <li>No surprises. Proactive comm = trust maintained</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══ SLIDE 7: Energy & Rhythm ═══ -->
-  <div class="slide" data-title="Energy">
-    <h3>Understanding the Engine</h3>
-    <h2>Energy & Rhythm</h2>
-    <div class="energy-layout fade-in">
-      <div class="energy-card energy-peak">
-        <h4>⬆ Peak Performance</h4>
-        <ul>
-          <li>Morning, working from home</li>
-          <li>Silence, no interruptions</li>
-          <li>Strategic thinking time</li>
-          <li>Live conversations with strong people</li>
-        </ul>
-      </div>
-      <div class="energy-card energy-drivers">
-        <h4>⚡ Motivation Drivers</h4>
-        <ul>
-          <li>New challenges — energy flows toward the unexplored</li>
-          <li>Conversations with inspiring people</li>
-          <li>Reminder of purpose — "why am I doing this?"</li>
-          <li>Recognition — being seen matters</li>
-        </ul>
-      </div>
-      <div class="energy-card energy-killers">
-        <h4>⬇ Energy Killers</h4>
-        <ul>
-          <li>Routine without growth</li>
-          <li>Operational tasks that should be delegated</li>
-          <li>People who drain without contributing</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══ SLIDE 8: Stress & Conflicts ═══ -->
-  <div class="slide" data-title="Stress & Conflicts">
-    <h3>When Things Get Tough</h3>
-    <h2>Stress & Conflicts</h2>
-    <div class="stress-layout fade-in">
-      <div class="stress-block">
-        <h4>When Stressed</h4>
-        <ul>
-          <li>Leave him alone — don't push, don't pile on</li>
-          <li>Simple support only: "You'll handle it."</li>
-          <li>Not solutions, not advice — just presence</li>
-          <li>He'll come back when he's processed it</li>
-        </ul>
-        <div class="key-point">Don't rush. Don't fix. Just be there.</div>
-      </div>
-      <div class="stress-block">
-        <h4>On Conflicts</h4>
-        <ul>
-          <li>Doesn't avoid them — resolves here and now</li>
-          <li>Can flare up — but cools down</li>
-          <li>Believes conflicts must be resolved fast</li>
-          <li>Same approach in business and personal life</li>
-        </ul>
-        <div class="key-point">His door is literally open. Knock. Step in. Sort it out.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══ SLIDE 9: Shadow Sides ═══ -->
-  <div class="slide" data-title="Shadow Sides">
-    <h3>Self-Awareness</h3>
-    <h2>Shadow Sides</h2>
-    <span class="shadow-label">He knows these — and actively works on them</span>
-    <div class="shadow-grid fade-in">
-      <div class="shadow-card">
-        <h4>Too Fast</h4>
-        <p class="shadow-brief">Not everyone keeps up.</p>
-        <div class="shadow-detail">Can run ahead and not notice others fell behind. Speak up if you need to slow down.</div>
-      </div>
-      <div class="shadow-card">
-        <h4>Too Demanding</h4>
-        <p class="shadow-brief">High standards, always.</p>
-        <div class="shadow-detail">"If it's obvious to me, why isn't it obvious to you?" — he's working on calibrating expectations.</div>
-      </div>
-      <div class="shadow-card">
-        <h4>Impatient</h4>
-        <p class="shadow-brief">Needs everything quickly.</p>
-        <div class="shadow-detail">Speed is a value, but he knows it can create pressure. Flag it if it's too much.</div>
-      </div>
-      <div class="shadow-card">
-        <h4>Perfectionism</h4>
-        <p class="shadow-brief">The bar is high.</p>
-        <div class="shadow-detail">More than control — it's about quality. But he recognizes diminishing returns.</div>
-      </div>
-      <div class="shadow-card">
-        <h4>Stubborn</h4>
-        <p class="shadow-brief">Hard to change once set.</p>
-        <div class="shadow-detail">Requires strong data or a completely new angle. Pressure won't work — arguments will.</div>
-      </div>
-      <div class="shadow-card">
-        <h4>Can Miss Contributions</h4>
-        <p class="shadow-brief">Too fast, too much going on.</p>
-        <div class="shadow-detail">Doesn't mean he doesn't value it. Speak up — he'll hear you. Stay quiet? You're gone.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══ SLIDE 10: Closing ═══ -->
-  <div class="slide closing-slide" data-title="Values">
-    <h3>What He Values</h3>
-    <h2>The Bottom Line</h2>
-    <div class="values-grid" id="valuesGrid">
-      <div class="value-chip">Initiative without drama</div>
-      <div class="value-chip">Responsibility without ego</div>
-      <div class="value-chip">Honesty, even when it hurts</div>
-      <div class="value-chip">Details you caught without being told</div>
-      <div class="value-chip">Momentum you manage yourself</div>
-      <div class="value-chip">Thoughtful decisions</div>
-      <div class="value-chip">Growth — his, yours, the team's</div>
-      <div class="value-chip">"Let's do better" over "That's how it's always done"</div>
-    </div>
-    <div class="closing-callback">
-      <p>Communication matters more than the mistake itself.<br>Messed up but told him early = forgivable. Stayed silent = trust is gone.</p>
-    </div>
-  </div>
-
-</div>
-
-<script>
-// ── Slide Engine ──
-const slides = document.querySelectorAll('.slide');
-const totalSlides = slides.length;
-let current = 0;
-let transitioning = false;
-
-function goTo(index) {
-  if (index < 0 || index >= totalSlides || index === current || transitioning) return;
-  transitioning = true;
-
-  const prev = slides[current];
-  const next = slides[index];
-
-  // Reset interactive states on leave
-  resetSlideInteractions(current);
-
-  prev.classList.remove('active');
-  prev.classList.add('exit-up');
-
-  setTimeout(() => {
-    prev.classList.remove('exit-up');
-    next.classList.add('active');
-    current = index;
-    updateNav();
-    triggerSlideAnimations(current);
-    setTimeout(() => { transitioning = false; }, 100);
-  }, 300);
-}
-
-function next() { goTo(current + 1); }
-function prev() { goTo(current - 1); }
-
-// ── Keyboard ──
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
-  if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
-  if (e.key === 'ArrowDown') { e.preventDefault(); next(); }
-  if (e.key === 'ArrowUp') { e.preventDefault(); prev(); }
-});
-
-// ── Touch ──
-let touchStartX = 0;
-document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
-document.addEventListener('touchend', (e) => {
-  const diff = touchStartX - e.changedTouches[0].clientX;
-  if (Math.abs(diff) > 50) { diff > 0 ? next() : prev(); }
-});
-
-// ── Navigation Dots ──
-const navContainer = document.getElementById('navDots');
-const titles = ['Title', 'Ground Rules', 'Decisions', 'Communication', 'Respect', 'Ownership', 'Energy', 'Stress', 'Shadows', 'Values'];
-
-titles.forEach((title, i) => {
-  const dot = document.createElement('button');
-  dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
-  dot.innerHTML = `<span class="tooltip">${title}</span>`;
-  dot.addEventListener('click', () => goTo(i));
-  navContainer.appendChild(dot);
-});
-
-function updateNav() {
-  document.querySelectorAll('.nav-dot').forEach((d, i) => {
-    d.classList.toggle('active', i === current);
-  });
-  document.getElementById('slideCounter').textContent = `${current + 1} / ${totalSlides}`;
-}
-
-// ── Progressive Build: Ground Rules (Slide 1) ──
-function animateRules() {
-  const rules = document.querySelectorAll('#rulesGrid .rule-item');
-  rules.forEach((rule, i) => {
-    setTimeout(() => rule.classList.add('visible'), 200 + i * 250);
-  });
-}
-
-function resetRules() {
-  document.querySelectorAll('#rulesGrid .rule-item').forEach(r => r.classList.remove('visible'));
-}
-
-// ── Decision Flow (Slide 2) ──
-function animateDecisions() {
-  const cards = document.querySelectorAll('#decisionFlow .decision-card');
-  cards.forEach((card, i) => {
-    setTimeout(() => card.classList.add('visible'), 200 + i * 300);
-  });
-}
-
-function resetDecisions() {
-  document.querySelectorAll('#decisionFlow .decision-card').forEach(c => c.classList.remove('visible'));
-}
-
-// ── Values chips (Slide 9) ──
-function animateValues() {
-  const chips = document.querySelectorAll('#valuesGrid .value-chip');
-  chips.forEach((chip, i) => {
-    setTimeout(() => chip.classList.add('visible'), 200 + i * 150);
-  });
-}
-
-function resetValues() {
-  document.querySelectorAll('#valuesGrid .value-chip').forEach(c => c.classList.remove('visible'));
-}
-
-// ── Flip cards reset ──
-function resetFlipCards() {
-  document.querySelectorAll('.flip-card').forEach(c => c.classList.remove('flipped'));
-}
-
-// ── Trigger per slide ──
-function triggerSlideAnimations(index) {
-  switch(index) {
-    case 1: animateRules(); break;
-    case 2: animateDecisions(); break;
-    case 9: animateValues(); break;
-  }
-}
-
-function resetSlideInteractions(index) {
-  switch(index) {
-    case 1: resetRules(); break;
-    case 2: resetDecisions(); break;
-    case 4: resetFlipCards(); break;
-    case 9: resetValues(); break;
-  }
-}
-
-// ── Initial slide ──
-triggerSlideAnimations(0);
-
-// ── Background Canvas: Subtle dot field ──
-const canvas = document.getElementById('bg-canvas');
-const ctx = canvas.getContext('2d');
-let particles = [];
-let mouseX = 0, mouseY = 0;
-
-function resize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-
-window.addEventListener('resize', resize);
-resize();
-
-document.addEventListener('mousemove', (e) => {
-  mouseX = e.clientX;
-  mouseY = e.clientY;
-});
-
-class Particle {
-  constructor() {
-    this.reset();
-  }
-  reset() {
-    this.x = Math.random() * canvas.width;
-    this.y = Math.random() * canvas.height;
-    this.size = Math.random() * 1.5 + 0.5;
-    this.baseAlpha = Math.random() * 0.15 + 0.03;
-    this.alpha = this.baseAlpha;
-    this.vx = (Math.random() - 0.5) * 0.15;
-    this.vy = (Math.random() - 0.5) * 0.15;
-  }
-  update() {
-    this.x += this.vx;
-    this.y += this.vy;
-
-    // Subtle mouse influence
-    const dx = mouseX - this.x;
-    const dy = mouseY - this.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < 150) {
-      this.alpha = this.baseAlpha + (1 - dist / 150) * 0.15;
-    } else {
-      this.alpha = this.baseAlpha;
-    }
-
-    if (this.x < -10 || this.x > canvas.width + 10 || this.y < -10 || this.y > canvas.height + 10) {
-      this.reset();
-    }
-  }
-  draw() {
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(74, 158, 255, ${this.alpha})`;
-    ctx.fill();
-  }
-}
-
-// Create particles
-for (let i = 0; i < 80; i++) {
-  particles.push(new Particle());
-}
-
-function animate() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  particles.forEach(p => { p.update(); p.draw(); });
-  requestAnimationFrame(animate);
-}
-
-animate();
-</script>
 </body>
 </html>
