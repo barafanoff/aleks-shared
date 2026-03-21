@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coworking Network Launch — Aleks Barafanov</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0B1120;
+  --bg-light: #111827;
+  --card: rgba(255,255,255,0.035);
+  --card-hover: rgba(255,255,255,0.07);
+  --card-border: rgba(255,255,255,0.06);
+  --text: #E8E6E3;
+  --text-dim: #8B95A5;
+  --text-muted: #5A6577;
+  --gold: #C9A84C;
+  --gold-soft: rgba(201,168,76,0.12);
+  --gold-border: rgba(201,168,76,0.3);
+  --teal: #2EC4B6;
+  --teal-soft: rgba(46,196,182,0.10);
+  --teal-border: rgba(46,196,182,0.25);
+  --blue: #6BA3D6;
+  --blue-soft: rgba(107,163,214,0.10);
+  --blue-border: rgba(107,163,214,0.25);
+  --silver: #A0AEC0;
+  --silver-soft: rgba(160,174,192,0.10);
+  --silver-border: rgba(160,174,192,0.25);
+  --red-soft: rgba(220,80,80,0.12);
+  --red-border: rgba(220,80,80,0.35);
+  --heading: 'Playfair Display', Georgia, serif;
+  --body: 'Inter', -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ═══ CANVAS BACKGROUND ═══ */
+#particles {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ═══ VIGNETTE ═══ */
+.vignette {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  box-shadow: inset 0 0 180px rgba(0,0,0,0.5);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ═══ PROGRESS BAR ═══ */
+.progress-bar {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), var(--teal));
+  z-index: 200;
+  transition: width 0.5s ease;
+}
+
+/* ═══ PRESENTATION ═══ */
+.presentation {
+  position: relative;
+  width: 100%; height: 100%;
+  z-index: 10;
+}
+
+/* ═══ SLIDE BASE ═══ */
+.slide {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+  pointer-events: none;
+  padding: 50px 80px;
+}
+.slide.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.slide.prev {
+  opacity: 0;
+  transform: translateY(-40px);
+}
+
+.slide-inner {
+  max-width: 1100px;
+  width: 100%;
+}
+.slide-inner.centered { text-align: center; }
+.slide-inner.wide { max-width: 1200px; }
+
+/* ═══ TYPOGRAPHY ═══ */
+h1 {
+  font-family: var(--heading);
+  font-weight: 700;
+  font-size: 3rem;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+h2 {
+  font-family: var(--heading);
+  font-weight: 700;
+  font-size: 2.1rem;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+h3 {
+  font-family: var(--body);
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--text);
+}
+p, li {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+.subtitle {
+  font-size: 1.1rem;
+  color: var(--text-dim);
+  font-weight: 400;
+  margin-top: 0.5rem;
+}
+.label {
+  font-family: var(--body);
+  font-weight: 600;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  display: inline-block;
+}
+.gold { color: var(--gold); }
+.teal { color: var(--teal); }
+.blue { color: var(--blue); }
+
+/* ═══ GOLD LINE ═══ */
+.gold-line {
+  width: 50px;
+  height: 2px;
+  background: var(--gold);
+  margin: 1.2rem auto;
+  opacity: 0;
+  transform: scaleX(0);
+  transition: opacity 0.5s ease 0.3s, transform 0.5s ease 0.3s;
+  transform-origin: center;
+}
+.slide.active .gold-line {
+  opacity: 1;
+  transform: scaleX(1);
+}
+.gold-line.left {
+  margin-left: 0;
+  transform-origin: left;
+}
+
+/* ═══ FADE-IN ANIMATIONS ═══ */
+.fi {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.slide.active .fi { opacity: 1; transform: translateY(0); }
+.slide.active .fi.d1 { transition-delay: 0.1s; }
+.slide.active .fi.d2 { transition-delay: 0.2s; }
+.slide.active .fi.d3 { transition-delay: 0.3s; }
+.slide.active .fi.d4 { transition-delay: 0.4s; }
+.slide.active .fi.d5 { transition-delay: 0.5s; }
+.slide.active .fi.d6 { transition-delay: 0.6s; }
+.slide.active .fi.d7 { transition-delay: 0.7s; }
+.slide.active .fi.d8 { transition-delay: 0.8s; }
+
+/* ═══ NAV DOTS ═══ */
+.nav-dots {
+  position: fixed;
+  right: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.nav-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+.nav-dot:hover { background: rgba(255,255,255,0.35); transform: scale(1.3); }
+.nav-dot.active {
+  background: var(--gold);
+  box-shadow: 0 0 10px rgba(201,168,76,0.4);
+  transform: scale(1.2);
+}
+
+/* ═══ SLIDE COUNTER ═══ */
+.slide-counter {
+  position: fixed;
+  bottom: 28px; right: 30px;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  z-index: 200;
+}
+
+/* ═══ KEYBOARD HINT ═══ */
+.kbd-hint {
+  position: fixed;
+  bottom: 28px; left: 30px;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  z-index: 200;
+  opacity: 0.5;
+  transition: opacity 1s ease 5s;
+}
+.kbd-hint.hide { opacity: 0; }
+
+/* ════════════════════════════════════════════ */
+/* ═══ SLIDE 1: TITLE ═══ */
+/* ════════════════════════════════════════════ */
+.title-label {
+  margin-bottom: 1.8rem;
+}
+.title-h1 {
+  font-size: 3.4rem;
+}
+.title-sub {
+  font-size: 1.15rem;
+  color: var(--text-dim);
+  margin-top: 0.6rem;
+  font-weight: 300;
+}
+.title-author {
+  margin-top: 2.5rem;
+}
+.title-name {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-dim);
+  letter-spacing: 0.03em;
+}
+.title-role {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+/* ════════════════════════════════════════════ */
+/* ═══ SLIDE 2: METRICS ═══ */
+/* ════════════════════════════════════════════ */
+.intro-text {
+  font-size: 1rem;
+  color: var(--text-dim);
+  max-width: 700px;
+  margin: 0 auto 2rem;
+  line-height: 1.6;
+}
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+.metric-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 24px 18px;
+  transition: all 0.3s ease;
+}
+.metric-card:hover {
+  background: var(--card-hover);
+  border-color: var(--gold-border);
+  transform: translateY(-2px);
+}
+.metric-number {
+  font-family: var(--mono);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.metric-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+.metric-context {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.prior-text {
+  margin-top: 1.8rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ════════════════════════════════════════════ */
+/* ═══ SLIDE 3: MOSAIC ═══ */
+/* ════════════════════════════════════════════ */
+.mosaic-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 1.5rem;
+}
+.cluster-box {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 22px 20px;
+  text-align: left;
+  transition: all 0.3s ease;
+}
+.cluster-box:hover {
+  background: var(--card-hover);
+}
+.cluster-box .cluster-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--card-border);
+}
+.cluster-box.bf .cluster-title { color: var(--gold); border-color: var(--gold-border); }
+.cluster-box.po .cluster-title { color: var(--teal); border-color: var(--teal-border); }
+.cluster-box.gp .cluster-title { color: var(--blue); border-color: var(--blue-border); }
+.cluster-box.cs .cluster-title { color: var(--silver); border-color: var(--silver-border); }
+
+.cluster-box .area-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 0;
+}
+.cluster-box .area-num {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.cluster-box .area-name {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* ════════════════════════════════════════════ */
+/* ═══ SLIDE 4: WHY A GUIDE ═══ */
+/* ════════════════════════════════════════════ */
+.mistakes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 1.5rem;
+  text-align: left;
+}
+.mistake-card {
+  background: var(--red-soft);
+  border: 1px solid var(--red-border);
+  border-left: 3px solid rgba(220,80,80,0.6);
+  border-radius: 8px;
+  padding: 18px 20px;
+}
+.mistake-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(240,140,140,0.9);
+  margin-bottom: 5px;
+}
+.mistake-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.guide-quote {
+  margin-top: 2.2rem;
+  font-family: var(--heading);
+  font-size: 1.35rem;
+  color: var(--gold);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* ════════════════════════════════════════════ */
+/* ═══ SLIDES 5-8: CLUSTER DETAIL ═══ */
+/* ════════════════════════════════════════════ */
+.cluster-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 0.3rem;
+}
+.cluster-badge {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+.badge-gold { background: var(--gold-soft); color: var(--gold); border: 1px solid var(--gold-border); }
+.badge-teal { background: var(--teal-soft); color: var(--teal); border: 1px solid var(--teal-border); }
+.badge-blue { background: var(--blue-soft); color: var(--blue); border: 1px solid var(--blue-border); }
+.badge-silver { background: var(--silver-soft); color: var(--silver); border: 1px solid var(--silver-border); }
+
+.areas-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 1.2rem 0;
+}
+.area-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 20px 18px;
+  text-align: left;
+  transition: all 0.3s ease;
+}
+.area-card:hover {
+  background: var(--card-hover);
+  transform: translateY(-2px);
+}
+.area-card h3 {
+  font-size: 0.92rem;
+  margin-bottom: 8px;
+}
+.area-card p {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.deliverables-row {
+  text-align: left;
+  margin-top: 0.8rem;
+}
+.deliverables-row .label {
+  margin-bottom: 10px;
+}
+.del-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+}
+.del-list li {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  padding: 6px 13px;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  transition: all 0.2s ease;
+}
+.del-list li:hover {
+  border-color: var(--gold-border);
+  color: var(--text);
+}
+
+/* ════════════════════════════════════════════ */
+/* ═══ SLIDE 9: MODULES ═══ */
+/* ════════════════════════════════════════════ */
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 1.5rem;
+}
+.module-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 28px 22px;
+  text-align: left;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+.module-card:hover {
+  background: var(--card-hover);
+  transform: translateY(-3px);
+  border-color: var(--gold-border);
+}
+.module-letter {
+  font-family: var(--heading);
+  font-size: 1.8rem;
+  color: var(--gold);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.module-card h3 {
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+}
+.module-card p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.module-tag {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--teal);
+  border: 1px solid var(--teal-border);
+  padding: 3px 10px;
+  border-radius: 4px;
+}
+.modules-note {
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ════════════════════════════════════════════ */
+/* ═══ SLIDE 10: THE LINE ═══ */
+/* ════════════════════════════════════════════ */
+.line-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  margin-top: 1.5rem;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.line-col {
+  padding: 28px 26px;
+  text-align: left;
+}
+.line-col.consultant {
+  background: var(--gold-soft);
+  border: 1px solid var(--gold-border);
+  border-right: none;
+  border-radius: 10px 0 0 10px;
+}
+.line-col.client {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-left: 1px solid var(--gold-border);
+  border-radius: 0 10px 10px 0;
+}
+.line-col h3 {
+  font-size: 0.95rem;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--card-border);
+}
+.line-col.consultant h3 { color: var(--gold); border-color: var(--gold-border); }
+.line-col ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.line-col li {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  padding-left: 16px;
+  position: relative;
+  line-height: 1.45;
+}
+.line-col li::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 7px;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+}
+.line-col.consultant li::before { background: var(--gold); }
+.line-col.client li::before { background: var(--text-muted); }
+.principle-bar {
+  margin-top: 2rem;
+  text-align: center;
+  font-family: var(--heading);
+  font-size: 1.25rem;
+  color: var(--gold);
+  font-style: italic;
+}
+
+/* ════════════════════════════════════════════ */
+/* ═══ SLIDE 11: PHASES ═══ */
+/* ════════════════════════════════════════════ */
+.phases-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  margin-top: 1.5rem;
+}
+.phase-card {
+  text-align: left;
+  padding: 22px 18px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+.phase-card:first-child { border-radius: 10px 0 0 10px; }
+.phase-card:last-child { border-radius: 0 10px 10px 0; }
+.phase-card:hover, .phase-card.active {
+  background: var(--gold-soft);
+  border-color: var(--gold-border);
+  z-index: 2;
+}
+.phase-num {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+.phase-card h3 {
+  font-size: 0.88rem;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+.phase-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+.phase-card:hover .phase-desc,
+.phase-card.active .phase-desc {
+  max-height: 200px;
+  opacity: 1;
+}
+.phase-arrow {
+  position: absolute;
+  right: -7px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gold);
+  font-size: 0.9rem;
+  z-index: 3;
+  opacity: 0.6;
+}
+.post-note {
+  margin-top: 1.5rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+}
+
+/* ════════════════════════════════════════════ */
+/* ═══ SLIDE 12: NEXT STEPS ═══ */
+/* ════════════════════════════════════════════ */
+.steps-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 1.5rem;
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.step-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 22px 24px;
+  text-align: left;
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  transition: all 0.3s ease;
+}
+.step-card:hover {
+  background: var(--card-hover);
+  border-color: var(--gold-border);
+}
+.step-icon {
+  flex-shrink: 0;
+  width: 40px; height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gold-soft);
+  border-radius: 8px;
+  border: 1px solid var(--gold-border);
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+.step-body h3 {
+  font-size: 0.95rem;
+  margin-bottom: 5px;
+}
+.step-body p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.cta-bar {
+  margin-top: 2.2rem;
+  text-align: center;
+}
+.cta-text {
+  font-family: var(--heading);
+  font-size: 1.25rem;
+  color: var(--gold);
+}
+.cta-sub {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 900px) {
+  .slide { padding: 30px 30px; }
+  h1 { font-size: 2.2rem; }
+  h2 { font-size: 1.6rem; }
+  .title-h1 { font-size: 2.4rem; }
+  .metrics-grid, .areas-row, .modules-grid { grid-template-columns: 1fr 1fr; }
+  .mosaic-wrap { gap: 10px; }
+  .phases-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .phase-card:first-child { border-radius: 10px 0 0 0; }
+  .phase-card:last-child { border-radius: 0 0 10px 0; }
+  .phase-card:nth-child(2) { border-radius: 0 10px 0 0; }
+  .phase-card:nth-child(3) { border-radius: 0 0 0 10px; }
+  .phase-arrow { display: none; }
+  .line-grid { grid-template-columns: 1fr; }
+  .line-col.consultant { border-radius: 10px 10px 0 0; border-right: 1px solid var(--gold-border); border-bottom: none; }
+  .line-col.client { border-radius: 0 0 10px 10px; border-left: 1px solid var(--card-border); }
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="particles"></canvas>
+<div class="vignette"></div>
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="presentation">
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 1: TITLE -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide active" data-slide="0">
+  <div class="slide-inner centered">
+    <div class="title-label fi d1"><span class="label">Consulting Services</span></div>
+    <h1 class="title-h1 fi d2">Coworking Network Launch</h1>
+    <p class="title-sub fi d3">From concept to operating business</p>
+    <div class="gold-line"></div>
+    <div class="title-author fi d5">
+      <div class="title-name">Aleks Barafanov</div>
+      <div class="title-role">CEO, SOK Works Israel</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 2: THE CONSULTANT -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="1">
+  <div class="slide-inner centered">
+    <h2 class="fi d1">Built From Zero. Proven at Scale.</h2>
+    <p class="intro-text fi d2">20+ years across real estate, tech, and finance. 7 years building a premium coworking network in Israel — from zero, in a foreign market.</p>
+    <div class="metrics-grid fi d3">
+      <div class="metric-card">
+        <div class="metric-number" data-count="10600" data-suffix="">0</div>
+        <div class="metric-label">Square meters built</div>
+        <div class="metric-context">2 locations, from scratch</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-number" data-count="60" data-suffix="+" data-prefix="">0</div>
+        <div class="metric-label">Net Promoter Score</div>
+        <div class="metric-context">Market average: 30–40</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-number" data-count="100" data-suffix="%">0</div>
+        <div class="metric-label">Tel Aviv occupancy</div>
+        <div class="metric-context">Since 2020 — through 6 crises</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-number" data-count="20" data-suffix="+" data-prefix="">0</div>
+        <div class="metric-label">Months avg client stay</div>
+        <div class="metric-context">+67% vs market benchmark</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-number" data-count="60" data-suffix="%">0</div>
+        <div class="metric-label">Client expansion rate</div>
+        <div class="metric-context">Market average: 20–30%</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-number" data-count="2" data-suffix="nd" data-special="rank">0</div>
+        <div class="metric-label">SpaceCenter 2025</div>
+        <div class="metric-context">Among 180+ coworking spaces</div>
+      </div>
+    </div>
+    <p class="prior-text fi d4">Previously: CEO HR-Tech startup · COO Media Tech · Branch management at Citi, Alfa-Bank, Uralsib</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 3: WHAT IT TAKES -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="2">
+  <div class="slide-inner centered">
+    <h2 class="fi d1">What It Actually Takes</h2>
+    <p class="subtitle fi d2">12 specialized areas across 4 pillars — each requires real depth</p>
+    <div class="mosaic-wrap fi d3">
+      <div class="cluster-box bf">
+        <div class="cluster-title">Business & Finance</div>
+        <div class="area-item"><span class="area-num">01</span><span class="area-name">Business Strategy & Model</span></div>
+        <div class="area-item"><span class="area-num">02</span><span class="area-name">Financial Planning & Modeling</span></div>
+        <div class="area-item"><span class="area-num">03</span><span class="area-name">Location Selection & Real Estate</span></div>
+      </div>
+      <div class="cluster-box po">
+        <div class="cluster-title">Product & Operations</div>
+        <div class="area-item"><span class="area-num">04</span><span class="area-name">Product & Space Design</span></div>
+        <div class="area-item"><span class="area-num">05</span><span class="area-name">Operations & Service</span></div>
+        <div class="area-item"><span class="area-num">06</span><span class="area-name">Technology Stack</span></div>
+      </div>
+      <div class="cluster-box gp">
+        <div class="cluster-title">Growth & People</div>
+        <div class="area-item"><span class="area-num">07</span><span class="area-name">Sales & Marketing</span></div>
+        <div class="area-item"><span class="area-num">08</span><span class="area-name">Team & HR</span></div>
+        <div class="area-item"><span class="area-num">09</span><span class="area-name">Community & Customer Experience</span></div>
+      </div>
+      <div class="cluster-box cs">
+        <div class="cluster-title">Compliance & Scale</div>
+        <div class="area-item"><span class="area-num">10</span><span class="area-name">Legal & Compliance</span></div>
+        <div class="area-item"><span class="area-num">11</span><span class="area-name">Market Research</span></div>
+        <div class="area-item"><span class="area-num">12</span><span class="area-name">Scaling & Network Operations</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 4: WHY A GUIDE -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="3">
+  <div class="slide-inner centered">
+    <h2 class="fi d1">The Cost of Figuring It Out Alone</h2>
+    <p class="subtitle fi d2">Common mistakes in coworking launches — each costs months and serious money</p>
+    <div class="mistakes-grid fi d3">
+      <div class="mistake-card">
+        <div class="mistake-title">Wrong product mix for the format</div>
+        <div class="mistake-desc">What works at 5,000 sqm fails at 500. Too many hot desks, wrong office sizes, missing meeting rooms — 6+ months of underperformance before you reconfigure.</div>
+      </div>
+      <div class="mistake-card">
+        <div class="mistake-title">Underestimating OPEX</div>
+        <div class="mistake-desc">Personnel, cleaning, utilities, maintenance, marketing — the real cost structure is invisible until month 3. Cash burns faster than expected.</div>
+      </div>
+      <div class="mistake-card">
+        <div class="mistake-title">Building before pre-selling</div>
+        <div class="mistake-desc">Opening day with 0% occupancy. No pipeline, no anchor tenants, no corporate deals signed. Every empty month is pure loss.</div>
+      </div>
+      <div class="mistake-card">
+        <div class="mistake-title">No market research for the area</div>
+        <div class="mistake-desc">Pricing blind, positioning wrong, competitors unknown. Demand assumptions based on gut feel instead of data. Repricing later destroys brand trust.</div>
+      </div>
+    </div>
+    <div class="guide-quote fi d4">"I've navigated every one of these. You don't have to."</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 5: BUSINESS & FINANCE -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="4">
+  <div class="slide-inner">
+    <div class="cluster-header fi d1">
+      <span class="cluster-badge badge-gold">Pillar 1</span>
+      <h2 style="margin-bottom:0">Business & Finance</h2>
+    </div>
+    <div class="areas-row fi d2">
+      <div class="area-card">
+        <h3>Business Strategy & Model</h3>
+        <p>Business model selection, value proposition, customer segmentation, competitive positioning, growth strategy, partnership structure</p>
+      </div>
+      <div class="area-card">
+        <h3>Financial Planning</h3>
+        <p>Unit economics per location, 3–5 year P&L, CAPEX/OPEX structure, pricing strategy, scenario modeling, cash flow projections</p>
+      </div>
+      <div class="area-card">
+        <h3>Location & Real Estate</h3>
+        <p>Site selection criteria, area assessment, landlord negotiation, due diligence, lease vs purchase analysis, deal pipeline</p>
+      </div>
+    </div>
+    <div class="deliverables-row fi d3">
+      <div class="label" style="margin-bottom:10px">Key Deliverables</div>
+      <ul class="del-list">
+        <li>Business model canvas</li>
+        <li>3-year financial model</li>
+        <li>Unit economics template</li>
+        <li>Location selection scorecard</li>
+        <li>Competitive landscape analysis</li>
+        <li>Pricing matrix with benchmarks</li>
+        <li>Growth roadmap</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 6: PRODUCT & OPERATIONS -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="5">
+  <div class="slide-inner">
+    <div class="cluster-header fi d1">
+      <span class="cluster-badge badge-teal">Pillar 2</span>
+      <h2 style="margin-bottom:0">Product & Operations</h2>
+    </div>
+    <div class="areas-row fi d2">
+      <div class="area-card">
+        <h3>Product & Space Design</h3>
+        <p>Product portfolio for 500 sqm, space zoning, design standards, IT infrastructure, smart building specs, construction management</p>
+      </div>
+      <div class="area-card">
+        <h3>Operations & Service</h3>
+        <p>Daily ops playbook, service SLAs, two-layer team model (HQ + unit), vendor management, quality control, occupancy management</p>
+      </div>
+      <div class="area-card">
+        <h3>Technology Stack</h3>
+        <p>Core business platform, CRM, access control, booking system, helpdesk, communication tools — build vs buy recommendations</p>
+      </div>
+    </div>
+    <div class="deliverables-row fi d3">
+      <div class="label" style="margin-bottom:10px">Key Deliverables</div>
+      <ul class="del-list">
+        <li>Product mix recommendation</li>
+        <li>Space planning guidelines</li>
+        <li>Operations playbook</li>
+        <li>SLA framework with KPIs</li>
+        <li>Tech stack recommendation</li>
+        <li>Equipment list with budgets</li>
+        <li>Construction timeline template</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 7: GROWTH & PEOPLE -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="6">
+  <div class="slide-inner">
+    <div class="cluster-header fi d1">
+      <span class="cluster-badge badge-blue">Pillar 3</span>
+      <h2 style="margin-bottom:0">Growth & People</h2>
+    </div>
+    <div class="areas-row fi d2">
+      <div class="area-card">
+        <h3>Sales & Marketing</h3>
+        <p>Brand positioning, sales process design, lead generation (online + local), pre-sales strategy, corporate B2B sales, local partnerships</p>
+      </div>
+      <div class="area-card">
+        <h3>Team & HR</h3>
+        <p>Org design (HQ + unit layers), role definitions, hiring strategy, compensation packages, onboarding programs, performance management</p>
+      </div>
+      <div class="area-card">
+        <h3>Community & CX</h3>
+        <p>Community strategy for small format, event programming, member onboarding journey, retention & expansion, feedback loops, neighborhood integration</p>
+      </div>
+    </div>
+    <div class="deliverables-row fi d3">
+      <div class="label" style="margin-bottom:10px">Key Deliverables</div>
+      <ul class="del-list">
+        <li>Marketing strategy</li>
+        <li>Sales process design</li>
+        <li>Pre-sales campaign plan</li>
+        <li>Org chart with scaling plan</li>
+        <li>Hiring process & guides</li>
+        <li>Community strategy framework</li>
+        <li>Retention playbook</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 8: COMPLIANCE & SCALE -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="7">
+  <div class="slide-inner">
+    <div class="cluster-header fi d1">
+      <span class="cluster-badge badge-silver">Pillar 4</span>
+      <h2 style="margin-bottom:0">Compliance & Scale</h2>
+    </div>
+    <div class="areas-row fi d2">
+      <div class="area-card">
+        <h3>Legal & Compliance</h3>
+        <p>Client contract framework, insurance requirements, regulatory compliance (fire, accessibility, health), data privacy, compliance calendar</p>
+      </div>
+      <div class="area-card">
+        <h3>Market Research</h3>
+        <p>Israeli market analysis, neighborhood segment deep-dive, global benchmarks, competitor scoring matrix, demand assessment, trend forecasts</p>
+      </div>
+      <div class="area-card">
+        <h3>Scaling & Network Ops</h3>
+        <p>Scaling playbook (1→3→10 locations), brand consistency, network effects, centralization plan, KPI dashboards for decision-making</p>
+      </div>
+    </div>
+    <div class="deliverables-row fi d3">
+      <div class="label" style="margin-bottom:10px">Key Deliverables</div>
+      <ul class="del-list">
+        <li>Contract framework</li>
+        <li>Compliance calendar</li>
+        <li>Market research report</li>
+        <li>Competitor mapping</li>
+        <li>Demand assessment</li>
+        <li>Scaling roadmap</li>
+        <li>KPI dashboard design</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 9: ADDITIONAL MODULES -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="8">
+  <div class="slide-inner centered">
+    <h2 class="fi d1">Additional Modules</h2>
+    <p class="subtitle fi d2">Available when you need them — priced separately</p>
+    <div class="modules-grid fi d3">
+      <div class="module-card">
+        <div class="module-letter">A</div>
+        <h3>Fundraising & Investment</h3>
+        <p>Pitch deck, investor materials, deal structures, financial projections for investors, investor targeting, pitch preparation</p>
+        <div class="module-tag">Separate Engagement</div>
+      </div>
+      <div class="module-card">
+        <div class="module-letter">B</div>
+        <h3>Strategic Vision & Culture</h3>
+        <p>Strategic session facilitation, vision & mission, company values, OKR framework, motivation & incentive system design</p>
+        <div class="module-tag">Separate Engagement</div>
+      </div>
+      <div class="module-card">
+        <div class="module-letter">C</div>
+        <h3>AI & Automation</h3>
+        <p>AI readiness assessment, process automation, AI agents for business functions, lead scoring, occupancy analytics, smart building</p>
+        <div class="module-tag">Separate Engagement</div>
+      </div>
+    </div>
+    <p class="modules-note fi d4">Each module is independent and can be added to the core consulting package on demand.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 10: THE LINE -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="9">
+  <div class="slide-inner centered">
+    <h2 class="fi d1">How Work Is Divided</h2>
+    <p class="subtitle fi d2">Clear boundary between consulting and operations</p>
+    <div class="line-grid fi d3">
+      <div class="line-col consultant">
+        <h3>What I Deliver</h3>
+        <ul>
+          <li>The full picture — complete business structure</li>
+          <li>Business model, financial logic, positioning</li>
+          <li>Frameworks, templates, playbooks</li>
+          <li>Market research, competitor analysis</li>
+          <li>Organizational design, role definitions</li>
+          <li>Technology stack recommendation</li>
+          <li>KPI targets and measurement system</li>
+        </ul>
+      </div>
+      <div class="line-col client">
+        <h3>What Your Team Executes</h3>
+        <ul>
+          <li>Strategic decisions — vision, direction</li>
+          <li>Daily operations, vendor management</li>
+          <li>Filling templates with real data</li>
+          <li>Hiring, managing, training people</li>
+          <li>Implementation, tracking, reporting</li>
+          <li>System setup and maintenance</li>
+          <li>Acting on insights and recommendations</li>
+        </ul>
+      </div>
+    </div>
+    <div class="principle-bar fi d4">"I build the machine. You run the machine."</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 11: PHASES -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="10">
+  <div class="slide-inner centered">
+    <h2 class="fi d1">Four Phases to Launch</h2>
+    <p class="subtitle fi d2">Structured process from research to opening day</p>
+    <div class="phases-row fi d3">
+      <div class="phase-card active" data-phase="0">
+        <div class="phase-num">Phase 0</div>
+        <h3>Discovery & Research</h3>
+        <div class="phase-desc">
+          Deep-dive interviews with you. Market research — Israeli market + your specific area + global benchmarks. Competitive analysis.<br><br>
+          <strong style="color:var(--gold)">Output:</strong> Market report + client brief
+        </div>
+        <span class="phase-arrow">›</span>
+      </div>
+      <div class="phase-card" data-phase="1">
+        <div class="phase-num">Phase 1</div>
+        <h3>Business Foundation</h3>
+        <div class="phase-desc">
+          Business model design. Financial modeling — unit economics, 3-year projections. Location assessment. Product mix recommendation.<br><br>
+          <strong style="color:var(--gold)">Output:</strong> Business model + financial model + product brief
+        </div>
+        <span class="phase-arrow">›</span>
+      </div>
+      <div class="phase-card" data-phase="2">
+        <div class="phase-num">Phase 2</div>
+        <h3>Operational Blueprint</h3>
+        <div class="phase-desc">
+          Operations playbook. Team structure and hiring plan. Technology stack. Sales & marketing strategy. Community strategy.<br><br>
+          <strong style="color:var(--gold)">Output:</strong> Operations manual + hiring plan + marketing strategy
+        </div>
+        <span class="phase-arrow">›</span>
+      </div>
+      <div class="phase-card" data-phase="3">
+        <div class="phase-num">Phase 3</div>
+        <h3>Launch Support</h3>
+        <div class="phase-desc">
+          Pre-sales strategy and execution support. Construction milestone reviews. Team hiring advisory. Launch readiness assessment.<br><br>
+          <strong style="color:var(--gold)">Output:</strong> Launch checklist + pre-sales results
+        </div>
+      </div>
+    </div>
+    <p class="post-note fi d4">Post-launch advisory — monthly KPI reviews, operational optimization, scaling readiness — is a separate engagement.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 12: NEXT STEPS -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="11">
+  <div class="slide-inner centered">
+    <h2 class="fi d1">Let's Start</h2>
+    <p class="subtitle fi d2">The first step is understanding your situation in depth</p>
+    <div class="gold-line"></div>
+    <div class="steps-wrap">
+      <div class="step-card fi d3">
+        <div class="step-icon">01</div>
+        <div class="step-body">
+          <h3>Discovery Session</h3>
+          <p>A deep conversation about your situation, goals, constraints, existing assets, and vision. No generic questions — a structured process built from real experience.</p>
+        </div>
+      </div>
+      <div class="step-card fi d4">
+        <div class="step-icon">28</div>
+        <div class="step-body">
+          <h3>Structured Discovery Framework</h3>
+          <p>28 targeted questions covering vision, finance, experience, location, market, operations, and decision-making. Every answer shapes the consulting engagement.</p>
+        </div>
+      </div>
+      <div class="step-card fi d5">
+        <div class="step-icon">→</div>
+        <div class="step-body">
+          <h3>First Working Session</h3>
+          <p>After discovery, we build your specific roadmap — what to do first, what can wait, and where the biggest risks are hiding.</p>
+        </div>
+      </div>
+    </div>
+    <div class="cta-bar fi d6">
+      <div class="cta-text">Ready when you are.</div>
+      <div class="cta-sub">Aleks Barafanov · aleks@sok.co.il</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /presentation -->
+
+<!-- ═══ NAVIGATION ═══ -->
+<div class="nav-dots" id="navDots"></div>
+<div class="slide-counter" id="slideCounter">1 / 12</div>
+<div class="kbd-hint" id="kbdHint">← → or Space to navigate</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ═══════════════════════════════════════
+  // PARTICLE SYSTEM
+  // ═══════════════════════════════════════
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  const PARTICLE_COUNT = 45;
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  class Particle {
+    constructor() {
+      this.reset();
+    }
+    reset() {
+      this.x = Math.random() * canvas.width;
+      this.y = Math.random() * canvas.height;
+      this.size = Math.random() * 1.5 + 0.5;
+      this.speedX = (Math.random() - 0.5) * 0.15;
+      this.speedY = (Math.random() - 0.5) * 0.12;
+      this.opacity = Math.random() * 0.2 + 0.05;
+      this.pulse = Math.random() * Math.PI * 2;
+      this.pulseSpeed = Math.random() * 0.005 + 0.002;
+    }
+    update() {
+      this.x += this.speedX;
+      this.y += this.speedY;
+      this.pulse += this.pulseSpeed;
+      if (this.x < -10 || this.x > canvas.width + 10 || this.y < -10 || this.y > canvas.height + 10) {
+        this.reset();
+      }
+    }
+    draw() {
+      const o = this.opacity + Math.sin(this.pulse) * 0.05;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(201, 168, 76, ${Math.max(0, o)})`;
+      ctx.fill();
+    }
+  }
+
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    particles.push(new Particle());
+  }
+
+  function animateParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => { p.update(); p.draw(); });
+    requestAnimationFrame(animateParticles);
+  }
+  animateParticles();
+
+  // ═══════════════════════════════════════
+  // SLIDE NAVIGATION
+  // ═══════════════════════════════════════
+  const slides = document.querySelectorAll('.slide');
+  const totalSlides = slides.length;
+  let current = 0;
+  let transitioning = false;
+
+  const navDotsContainer = document.getElementById('navDots');
+  const slideCounter = document.getElementById('slideCounter');
+  const progressBar = document.getElementById('progressBar');
+  const kbdHint = document.getElementById('kbdHint');
+
+  // Create dots
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+    dot.addEventListener('click', () => goToSlide(i));
+    navDotsContainer.appendChild(dot);
+  }
+
+  function updateUI() {
+    const dots = navDotsContainer.querySelectorAll('.nav-dot');
+    dots.forEach((d, i) => d.classList.toggle('active', i === current));
+    slideCounter.textContent = (current + 1) + ' / ' + totalSlides;
+    progressBar.style.width = ((current + 1) / totalSlides * 100) + '%';
+  }
+
+  function goToSlide(n) {
+    if (n === current || n < 0 || n >= totalSlides || transitioning) return;
+    transitioning = true;
+
+    const prev = slides[current];
+    const next = slides[n];
+
+    // Remove active from all slides
+    slides.forEach(s => {
+      s.classList.remove('active', 'prev');
+      // Reset fade-in elements for non-active slides
+    });
+
+    // Set direction
+    if (n > current) {
+      prev.classList.add('prev');
+    }
+
+    next.classList.add('active');
+    current = n;
+    updateUI();
+
+    // Trigger counter animations if on metrics slide
+    if (current === 1) {
+      setTimeout(() => animateCounters(), 400);
+    }
+
+    // Reset fade-in elements for next slide
+    resetFadeIns(next);
+
+    setTimeout(() => { transitioning = false; }, 700);
+  }
+
+  function nextSlide() { goToSlide(current + 1); }
+  function prevSlide() { goToSlide(current - 1); }
+
+  // Keyboard
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      nextSlide();
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      prevSlide();
+    }
+    // Hide hint after first keypress
+    kbdHint.classList.add('hide');
+  });
+
+  // Touch swipe
+  let touchStartX = 0;
+  let touchStartY = 0;
+  document.addEventListener('touchstart', function(e) {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+  });
+  document.addEventListener('touchend', function(e) {
+    const dx = e.changedTouches[0].screenX - touchStartX;
+    const dy = e.changedTouches[0].screenY - touchStartY;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+      dx < 0 ? nextSlide() : prevSlide();
+    }
+  });
+
+  // ═══════════════════════════════════════
+  // COUNTER ANIMATIONS
+  // ═══════════════════════════════════════
+  let countersAnimated = false;
+
+  function animateCounters() {
+    if (countersAnimated) return;
+    countersAnimated = true;
+
+    const counters = document.querySelectorAll('[data-slide="1"] .metric-number');
+    counters.forEach(el => {
+      const target = parseInt(el.getAttribute('data-count'));
+      const suffix = el.getAttribute('data-suffix') || '';
+      const prefix = el.getAttribute('data-prefix') || '';
+      const special = el.getAttribute('data-special');
+      const duration = 1800;
+      const start = performance.now();
+
+      function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+      function update(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const value = Math.round(easeOut(progress) * target);
+
+        if (special === 'rank') {
+          el.textContent = prefix + value + (value > 0 ? suffix : '');
+        } else {
+          el.textContent = prefix + value.toLocaleString() + suffix;
+        }
+
+        if (progress < 1) requestAnimationFrame(update);
+      }
+      requestAnimationFrame(update);
+    });
+  }
+
+  // ═══════════════════════════════════════
+  // FADE-IN RESET
+  // ═══════════════════════════════════════
+  function resetFadeIns(slideEl) {
+    // Elements are controlled by CSS transitions triggered by .active class
+    // No JS needed — CSS handles it
+  }
+
+  // ═══════════════════════════════════════
+  // PHASE TIMELINE INTERACTION
+  // ═══════════════════════════════════════
+  const phaseCards = document.querySelectorAll('.phase-card');
+  phaseCards.forEach(card => {
+    card.addEventListener('click', function() {
+      phaseCards.forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  // ═══════════════════════════════════════
+  // INIT
+  // ═══════════════════════════════════════
+  updateUI();
+
+  // Hide keyboard hint after 6 seconds
+  setTimeout(() => kbdHint.classList.add('hide'), 6000);
+
+})();
+</script>
+
+</body>
+</html>
