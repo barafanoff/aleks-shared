@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Запуск сети коворкингов — Алекс Барафанов</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0B1120;
+  --bg-light: #111827;
+  --card: rgba(255,255,255,0.035);
+  --card-hover: rgba(255,255,255,0.07);
+  --card-border: rgba(255,255,255,0.06);
+  --text: #E8E6E3;
+  --text-dim: #8B95A5;
+  --text-muted: #5A6577;
+  --gold: #5BAAEF;
+  --gold-soft: rgba(91,170,239,0.12);
+  --gold-border: rgba(91,170,239,0.3);
+  --teal: #2EC4B6;
+  --teal-soft: rgba(46,196,182,0.10);
+  --teal-border: rgba(46,196,182,0.25);
+  --blue: #A78BFA;
+  --blue-soft: rgba(167,139,250,0.10);
+  --blue-border: rgba(167,139,250,0.25);
+  --silver: #A0AEC0;
+  --silver-soft: rgba(160,174,192,0.10);
+  --silver-border: rgba(160,174,192,0.25);
+  --red-soft: rgba(220,80,80,0.12);
+  --red-border: rgba(220,80,80,0.35);
+  --heading: 'Playfair Display', Georgia, serif;
+  --body: 'Inter', -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#particles {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.vignette {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  box-shadow: inset 0 0 180px rgba(0,0,0,0.5);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.progress-bar {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), var(--teal));
+  z-index: 200;
+  transition: width 0.5s ease;
+}
+
+.presentation {
+  position: relative;
+  width: 100%; height: 100%;
+  z-index: 10;
+}
+
+.slide {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+  pointer-events: none;
+  padding: 50px 80px;
+}
+.slide.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.slide.prev {
+  opacity: 0;
+  transform: translateY(-40px);
+}
+
+.slide-inner {
+  max-width: 1100px;
+  width: 100%;
+}
+.slide-inner.centered { text-align: center; }
+.slide-inner.wide { max-width: 1200px; }
+
+h1 {
+  font-family: var(--heading);
+  font-weight: 700;
+  font-size: 3rem;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+h2 {
+  font-family: var(--heading);
+  font-weight: 700;
+  font-size: 2.1rem;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+h3 {
+  font-family: var(--body);
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--text);
+}
+p, li {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+.subtitle {
+  font-size: 1.1rem;
+  color: var(--text-dim);
+  font-weight: 400;
+  margin-top: 0.5rem;
+}
+.label {
+  font-family: var(--body);
+  font-weight: 600;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  display: inline-block;
+}
+
+.gold-line {
+  width: 50px;
+  height: 2px;
+  background: var(--gold);
+  margin: 1.2rem auto;
+  opacity: 0;
+  transform: scaleX(0);
+  transition: opacity 0.5s ease 0.3s, transform 0.5s ease 0.3s;
+  transform-origin: center;
+}
+.slide.active .gold-line {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.fi {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.slide.active .fi { opacity: 1; transform: translateY(0); }
+.slide.active .fi.d1 { transition-delay: 0.1s; }
+.slide.active .fi.d2 { transition-delay: 0.2s; }
+.slide.active .fi.d3 { transition-delay: 0.3s; }
+.slide.active .fi.d4 { transition-delay: 0.4s; }
+.slide.active .fi.d5 { transition-delay: 0.5s; }
+.slide.active .fi.d6 { transition-delay: 0.6s; }
+.slide.active .fi.d7 { transition-delay: 0.7s; }
+.slide.active .fi.d8 { transition-delay: 0.8s; }
+
+.nav-dots {
+  position: fixed;
+  right: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.nav-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+.nav-dot:hover { background: rgba(255,255,255,0.35); transform: scale(1.3); }
+.nav-dot.active {
+  background: var(--gold);
+  box-shadow: 0 0 10px rgba(91,170,239,0.4);
+  transform: scale(1.2);
+}
+
+.slide-counter {
+  position: fixed;
+  bottom: 28px; right: 30px;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  z-index: 200;
+}
+
+.kbd-hint {
+  position: fixed;
+  bottom: 28px; left: 30px;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  z-index: 200;
+  opacity: 0.5;
+  transition: opacity 1s ease 5s;
+}
+.kbd-hint.hide { opacity: 0; }
+
+/* ═══ SLIDE 1 ═══ */
+.title-label { margin-bottom: 1.8rem; }
+.title-h1 { font-size: 3.4rem; }
+.title-sub { font-size: 1.15rem; color: var(--text-dim); margin-top: 0.6rem; font-weight: 300; }
+.title-author { margin-top: 2.5rem; }
+.title-name { font-size: 1rem; font-weight: 500; color: var(--text-dim); letter-spacing: 0.03em; }
+.title-role { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+/* ═══ SLIDE 2 ═══ */
+.intro-text { font-size: 1rem; color: var(--text-dim); max-width: 700px; margin: 0 auto 2rem; line-height: 1.6; }
+.metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.metric-card { background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; padding: 24px 18px; transition: all 0.3s ease; }
+.metric-card:hover { background: var(--card-hover); border-color: var(--gold-border); transform: translateY(-2px); }
+.metric-number { font-family: var(--mono); font-size: 2.2rem; font-weight: 700; color: var(--gold); line-height: 1; margin-bottom: 6px; }
+.metric-label { font-size: 0.82rem; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.metric-context { font-size: 0.72rem; color: var(--text-muted); }
+.prior-text { margin-top: 1.8rem; font-size: 0.8rem; color: var(--text-muted); }
+
+/* ═══ SLIDE 3 ═══ */
+.mosaic-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 1.5rem; }
+.cluster-box { background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; padding: 22px 20px; text-align: left; transition: all 0.3s ease; }
+.cluster-box:hover { background: var(--card-hover); }
+.cluster-box .cluster-title { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--card-border); }
+.cluster-box.bf .cluster-title { color: var(--gold); border-color: var(--gold-border); }
+.cluster-box.po .cluster-title { color: var(--teal); border-color: var(--teal-border); }
+.cluster-box.gp .cluster-title { color: var(--blue); border-color: var(--blue-border); }
+.cluster-box.cs .cluster-title { color: var(--silver); border-color: var(--silver-border); }
+.cluster-box .area-item { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; }
+.cluster-box .area-num { font-family: var(--mono); font-size: 0.65rem; color: var(--text-muted); flex-shrink: 0; margin-top: 2px; }
+.cluster-box .area-name { font-size: 0.88rem; font-weight: 500; color: var(--text); }
+
+/* ═══ SLIDE 4 ═══ */
+.mistakes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 1.5rem; text-align: left; }
+.mistake-card { background: var(--red-soft); border: 1px solid var(--red-border); border-left: 3px solid rgba(220,80,80,0.6); border-radius: 8px; padding: 18px 20px; }
+.mistake-title { font-size: 0.85rem; font-weight: 600; color: rgba(240,140,140,0.9); margin-bottom: 5px; }
+.mistake-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+.guide-quote { margin-top: 2.2rem; font-family: var(--heading); font-size: 1.35rem; color: var(--gold); font-style: italic; line-height: 1.4; }
+
+/* ═══ SLIDES 5-8 ═══ */
+.cluster-header { display: flex; align-items: center; gap: 14px; margin-bottom: 0.3rem; }
+.cluster-badge { font-family: var(--mono); font-size: 0.65rem; font-weight: 500; padding: 3px 10px; border-radius: 4px; letter-spacing: 0.05em; }
+.badge-gold { background: var(--gold-soft); color: var(--gold); border: 1px solid var(--gold-border); }
+.badge-teal { background: var(--teal-soft); color: var(--teal); border: 1px solid var(--teal-border); }
+.badge-blue { background: var(--blue-soft); color: var(--blue); border: 1px solid var(--blue-border); }
+.badge-silver { background: var(--silver-soft); color: var(--silver); border: 1px solid var(--silver-border); }
+.areas-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 1.2rem 0; }
+.area-card { background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; padding: 20px 18px; text-align: left; transition: all 0.3s ease; }
+.area-card:hover { background: var(--card-hover); transform: translateY(-2px); }
+.area-card h3 { font-size: 0.92rem; margin-bottom: 8px; }
+.area-card p { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
+.deliverables-row { text-align: left; margin-top: 0.8rem; }
+.deliverables-row .label { margin-bottom: 10px; }
+.del-list { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; }
+.del-list li { background: var(--card); border: 1px solid var(--card-border); border-radius: 6px; padding: 6px 13px; font-size: 0.78rem; color: var(--text-dim); transition: all 0.2s ease; }
+.del-list li:hover { border-color: var(--gold-border); color: var(--text); }
+
+/* ═══ SLIDE 9 ═══ */
+.modules-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 1.5rem; }
+.module-card { background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; padding: 28px 22px; text-align: left; transition: all 0.3s ease; position: relative; overflow: hidden; }
+.module-card:hover { background: var(--card-hover); transform: translateY(-3px); border-color: var(--gold-border); }
+.module-letter { font-family: var(--heading); font-size: 1.8rem; color: var(--gold); font-weight: 700; margin-bottom: 10px; }
+.module-card h3 { font-size: 0.95rem; margin-bottom: 10px; }
+.module-card p { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+.module-tag { display: inline-block; margin-top: 14px; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal); border: 1px solid var(--teal-border); padding: 3px 10px; border-radius: 4px; }
+.modules-note { margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted); font-style: italic; }
+
+/* ═══ SLIDE 10 ═══ */
+.line-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin-top: 1.5rem; border-radius: 10px; overflow: hidden; }
+.line-col { padding: 28px 26px; text-align: left; }
+.line-col.consultant { background: var(--gold-soft); border: 1px solid var(--gold-border); border-right: none; border-radius: 10px 0 0 10px; }
+.line-col.client { background: var(--card); border: 1px solid var(--card-border); border-left: 1px solid var(--gold-border); border-radius: 0 10px 10px 0; }
+.line-col h3 { font-size: 0.95rem; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--card-border); }
+.line-col.consultant h3 { color: var(--gold); border-color: var(--gold-border); }
+.line-col ul { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+.line-col li { font-size: 0.82rem; color: var(--text-dim); padding-left: 16px; position: relative; line-height: 1.45; }
+.line-col li::before { content: ''; position: absolute; left: 0; top: 7px; width: 5px; height: 5px; border-radius: 50%; }
+.line-col.consultant li::before { background: var(--gold); }
+.line-col.client li::before { background: var(--text-muted); }
+.principle-bar { margin-top: 2rem; text-align: center; font-family: var(--heading); font-size: 1.25rem; color: var(--gold); font-style: italic; }
+
+/* ═══ SLIDE 11 ═══ */
+.phases-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 1.5rem; }
+.phase-card { text-align: left; padding: 22px 18px; background: var(--card); border: 1px solid var(--card-border); cursor: pointer; transition: all 0.3s ease; position: relative; }
+.phase-card:first-child { border-radius: 10px 0 0 10px; }
+.phase-card:last-child { border-radius: 0 10px 10px 0; }
+.phase-card:hover, .phase-card.active { background: var(--gold-soft); border-color: var(--gold-border); z-index: 2; }
+.phase-num { font-family: var(--mono); font-size: 0.65rem; color: var(--gold); margin-bottom: 6px; }
+.phase-card h3 { font-size: 0.88rem; margin-bottom: 8px; line-height: 1.3; }
+.phase-desc { font-size: 0.75rem; color: var(--text-muted); line-height: 1.5; max-height: 0; overflow: hidden; transition: max-height 0.4s ease, opacity 0.3s ease; opacity: 0; }
+.phase-card:hover .phase-desc, .phase-card.active .phase-desc { max-height: 200px; opacity: 1; }
+.phase-arrow { position: absolute; right: -7px; top: 50%; transform: translateY(-50%); color: var(--gold); font-size: 0.9rem; z-index: 3; opacity: 0.6; }
+.post-note { margin-top: 1.5rem; font-size: 0.82rem; color: var(--text-muted); font-style: italic; text-align: center; }
+
+/* ═══ SLIDE 12 ═══ */
+.steps-wrap { display: flex; flex-direction: column; gap: 18px; margin-top: 1.5rem; max-width: 680px; margin-left: auto; margin-right: auto; }
+.step-card { background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; padding: 22px 24px; text-align: left; display: flex; gap: 18px; align-items: flex-start; transition: all 0.3s ease; }
+.step-card:hover { background: var(--card-hover); border-color: var(--gold-border); }
+.step-icon { flex-shrink: 0; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--gold-soft); border-radius: 8px; border: 1px solid var(--gold-border); font-family: var(--mono); font-size: 0.85rem; font-weight: 700; color: var(--gold); }
+.step-body h3 { font-size: 0.95rem; margin-bottom: 5px; }
+.step-body p { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
+.cta-bar { margin-top: 2.2rem; text-align: center; }
+.cta-text { font-family: var(--heading); font-size: 1.25rem; color: var(--gold); }
+.cta-sub { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem; }
+
+@media (max-width: 900px) {
+  .slide { padding: 30px 30px; }
+  h1 { font-size: 2.2rem; }
+  h2 { font-size: 1.6rem; }
+  .title-h1 { font-size: 2.4rem; }
+  .metrics-grid, .areas-row, .modules-grid { grid-template-columns: 1fr 1fr; }
+  .mosaic-wrap { gap: 10px; }
+  .phases-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .phase-card:first-child { border-radius: 10px 0 0 0; }
+  .phase-card:last-child { border-radius: 0 0 10px 0; }
+  .phase-card:nth-child(2) { border-radius: 0 10px 0 0; }
+  .phase-card:nth-child(3) { border-radius: 0 0 0 10px; }
+  .phase-arrow { display: none; }
+  .line-grid { grid-template-columns: 1fr; }
+  .line-col.consultant { border-radius: 10px 10px 0 0; border-right: 1px solid var(--gold-border); border-bottom: none; }
+  .line-col.client { border-radius: 0 0 10px 10px; border-left: 1px solid var(--card-border); }
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="particles"></canvas>
+<div class="vignette"></div>
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="presentation">
+
+<!-- СЛАЙД 1: ТИТУЛЬНЫЙ -->
+<div class="slide active" data-slide="0">
+  <div class="slide-inner centered">
+    <div class="title-label fi d1"><span class="label">Консалтинг</span></div>
+    <h1 class="title-h1 fi d2">Запуск сети коворкингов</h1>
+    <p class="title-sub fi d3">От концепции до работающего бизнеса</p>
+    <div class="gold-line"></div>
+    <div class="title-author fi d5">
+      <div class="title-name">Алекс Барафанов</div>
+      <div class="title-role">CEO, SOK Works Israel</div>
+    </div>
+  </div>
+</div>
+
+<!-- СЛАЙД 2: КОНСУЛЬТАНТ -->
+<div class="slide" data-slide="1">
+  <div class="slide-inner centered">
+    <h2 class="fi d1">Построено с нуля. Проверено масштабом.</h2>
+    <p class="intro-text fi d2">20+ лет в недвижимости, технологиях и финансах. 7 лет строил премиальную сеть коворкингов в Израиле — с нуля, в чужой стране.</p>
+    <div class="metrics-grid fi d3">
+      <div class="metric-card">
+        <div class="metric-number" data-count="10600" data-suffix="">0</div>
+        <div class="metric-label">Кв. метров построено</div>
+        <div class="metric-context">2 локации, с нуля</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-number" data-count="60" data-suffix="+" data-prefix="">0</div>
+        <div class="metric-label">Net Promoter Score</div>
+        <div class="metric-context">Среднее по рынку: 30–40</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-number" data-count="100" data-suffix="%">0</div>
+        <div class="metric-label">Заполняемость Тель-Авив</div>
+        <div class="metric-context">С 2020 — через 6 кризисов</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-number" data-count="20" data-suffix="+" data-prefix="">0</div>
+        <div class="metric-label">Месяцев — среднее время клиента</div>
+        <div class="metric-context">+67% vs рыночный бенчмарк</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-number" data-count="60" data-suffix="%">0</div>
+        <div class="metric-label">Клиенты расширяются</div>
+        <div class="metric-context">Среднее по рынку: 20–30%</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-number" data-count="2" data-suffix="-е" data-special="rank">0</div>
+        <div class="metric-label">SpaceCenter 2025</div>
+        <div class="metric-context">Среди 180+ коворкингов</div>
+      </div>
+    </div>
+    <p class="prior-text fi d4">Ранее: CEO HR-Tech стартапа · COO Media Tech · Управление отделениями Citi, Альфа-Банк, Уралсиб</p>
+  </div>
+</div>
+
+<!-- СЛАЙД 3: ЧТО ТРЕБУЕТСЯ -->
+<div class="slide" data-slide="2">
+  <div class="slide-inner centered">
+    <h2 class="fi d1">Что на самом деле требуется</h2>
+    <p class="subtitle fi d2">12 специализированных областей в 4 направлениях — каждая требует реальной экспертизы</p>
+    <div class="mosaic-wrap fi d3">
+      <div class="cluster-box bf">
+        <div class="cluster-title">Бизнес и финансы</div>
+        <div class="area-item"><span class="area-num">01</span><span class="area-name">Бизнес-стратегия и модель</span></div>
+        <div class="area-item"><span class="area-num">02</span><span class="area-name">Финансовое планирование и моделирование</span></div>
+        <div class="area-item"><span class="area-num">03</span><span class="area-name">Выбор локации и недвижимость</span></div>
+      </div>
+      <div class="cluster-box po">
+        <div class="cluster-title">Продукт и операции</div>
+        <div class="area-item"><span class="area-num">04</span><span class="area-name">Продукт и дизайн пространства</span></div>
+        <div class="area-item"><span class="area-num">05</span><span class="area-name">Операционное управление и сервис</span></div>
+        <div class="area-item"><span class="area-num">06</span><span class="area-name">Технологический стек</span></div>
+      </div>
+      <div class="cluster-box gp">
+        <div class="cluster-title">Рост и люди</div>
+        <div class="area-item"><span class="area-num">07</span><span class="area-name">Продажи и маркетинг</span></div>
+        <div class="area-item"><span class="area-num">08</span><span class="area-name">Команда и HR</span></div>
+        <div class="area-item"><span class="area-num">09</span><span class="area-name">Комьюнити и клиентский опыт</span></div>
+      </div>
+      <div class="cluster-box cs">
+        <div class="cluster-title">Комплаенс и масштабирование</div>
+        <div class="area-item"><span class="area-num">10</span><span class="area-name">Юридические вопросы и комплаенс</span></div>
+        <div class="area-item"><span class="area-num">11</span><span class="area-name">Исследование рынка</span></div>
+        <div class="area-item"><span class="area-num">12</span><span class="area-name">Масштабирование и управление сетью</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- СЛАЙД 4: ЦЕНА ОШИБОК -->
+<div class="slide" data-slide="3">
+  <div class="slide-inner centered">
+    <h2 class="fi d1">Цена самостоятельных ошибок</h2>
+    <p class="subtitle fi d2">Типичные ошибки при запуске коворкинга — каждая стоит месяцы и серьёзные деньги</p>
+    <div class="mistakes-grid fi d3">
+      <div class="mistake-card">
+        <div class="mistake-title">Неправильный продуктовый микс</div>
+        <div class="mistake-desc">То, что работает на 5 000 кв.м, не работает на 500. Слишком много хот-десков, неправильные размеры офисов, нет переговорных — 6+ месяцев потерь до реконфигурации.</div>
+      </div>
+      <div class="mistake-card">
+        <div class="mistake-title">Недооценка операционных расходов</div>
+        <div class="mistake-desc">Персонал, уборка, коммуналка, обслуживание, маркетинг — реальная структура затрат невидима до 3-го месяца. Деньги сгорают быстрее, чем ожидалось.</div>
+      </div>
+      <div class="mistake-card">
+        <div class="mistake-title">Стройка без предпродаж</div>
+        <div class="mistake-desc">День открытия с 0% заполняемости. Нет воронки, нет якорных арендаторов, нет корпоративных контрактов. Каждый пустой месяц — чистый убыток.</div>
+      </div>
+      <div class="mistake-card">
+        <div class="mistake-title">Нет исследования рынка для района</div>
+        <div class="mistake-desc">Ценообразование вслепую, позиционирование мимо, конкуренты неизвестны. Спрос оценивается на ощущениях. Изменение цен потом разрушает доверие к бренду.</div>
+      </div>
+    </div>
+    <div class="guide-quote fi d4">«Я прошёл через каждую из этих ошибок. Вам не обязательно.»</div>
+  </div>
+</div>
+
+<!-- СЛАЙД 5: БИЗНЕС И ФИНАНСЫ -->
+<div class="slide" data-slide="4">
+  <div class="slide-inner">
+    <div class="cluster-header fi d1">
+      <span class="cluster-badge badge-gold">Направление 1</span>
+      <h2 style="margin-bottom:0">Бизнес и финансы</h2>
+    </div>
+    <div class="areas-row fi d2">
+      <div class="area-card">
+        <h3>Бизнес-стратегия и модель</h3>
+        <p>Выбор бизнес-модели, ценностное предложение, сегментация клиентов, конкурентное позиционирование, стратегия роста, партнёрская структура</p>
+      </div>
+      <div class="area-card">
+        <h3>Финансовое планирование</h3>
+        <p>Юнит-экономика на локацию, P&L на 3–5 лет, структура CAPEX/OPEX, ценовая стратегия, сценарное моделирование, денежные потоки</p>
+      </div>
+      <div class="area-card">
+        <h3>Локация и недвижимость</h3>
+        <p>Критерии выбора площадки, анализ района, переговоры с арендодателем, due diligence, аренда vs покупка, пайплайн объектов</p>
+      </div>
+    </div>
+    <div class="deliverables-row fi d3">
+      <div class="label" style="margin-bottom:10px">Ключевые результаты</div>
+      <ul class="del-list">
+        <li>Бизнес-модель</li>
+        <li>Финансовая модель на 3 года</li>
+        <li>Шаблон юнит-экономики</li>
+        <li>Скоркард выбора локации</li>
+        <li>Конкурентный анализ</li>
+        <li>Ценовая матрица с бенчмарками</li>
+        <li>Дорожная карта роста</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- СЛАЙД 6: ПРОДУКТ И ОПЕРАЦИИ -->
+<div class="slide" data-slide="5">
+  <div class="slide-inner">
+    <div class="cluster-header fi d1">
+      <span class="cluster-badge badge-teal">Направление 2</span>
+      <h2 style="margin-bottom:0">Продукт и операции</h2>
+    </div>
+    <div class="areas-row fi d2">
+      <div class="area-card">
+        <h3>Продукт и пространство</h3>
+        <p>Продуктовый портфель на 500 кв.м, зонирование, стандарты дизайна, IT-инфраструктура, умное здание, управление стройкой</p>
+      </div>
+      <div class="area-card">
+        <h3>Операции и сервис</h3>
+        <p>Операционный плейбук, SLA сервиса, двухуровневая команда (HQ + юнит), управление подрядчиками, контроль качества, управление заполняемостью</p>
+      </div>
+      <div class="area-card">
+        <h3>Технологический стек</h3>
+        <p>Бизнес-платформа, CRM, контроль доступа, система бронирования, хелпдеск, коммуникации — рекомендации build vs buy</p>
+      </div>
+    </div>
+    <div class="deliverables-row fi d3">
+      <div class="label" style="margin-bottom:10px">Ключевые результаты</div>
+      <ul class="del-list">
+        <li>Рекомендация по продуктовому миксу</li>
+        <li>Принципы планировки</li>
+        <li>Операционный плейбук</li>
+        <li>Фреймворк SLA с KPI</li>
+        <li>Рекомендация по технологиям</li>
+        <li>Список оборудования с бюджетами</li>
+        <li>Шаблон графика стройки</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- СЛАЙД 7: РОСТ И ЛЮДИ -->
+<div class="slide" data-slide="6">
+  <div class="slide-inner">
+    <div class="cluster-header fi d1">
+      <span class="cluster-badge badge-blue">Направление 3</span>
+      <h2 style="margin-bottom:0">Рост и люди</h2>
+    </div>
+    <div class="areas-row fi d2">
+      <div class="area-card">
+        <h3>Продажи и маркетинг</h3>
+        <p>Позиционирование бренда, воронка продаж, лидогенерация (онлайн + локальная), стратегия предпродаж, корпоративные B2B продажи, локальные партнёрства</p>
+      </div>
+      <div class="area-card">
+        <h3>Команда и HR</h3>
+        <p>Оргдизайн (HQ + юниты), описания ролей, стратегия найма, компенсационные пакеты, программы онбординга, управление эффективностью</p>
+      </div>
+      <div class="area-card">
+        <h3>Комьюнити и CX</h3>
+        <p>Стратегия комьюнити для малого формата, программа мероприятий, онбординг резидентов, удержание и расширение, обратная связь, интеграция в район</p>
+      </div>
+    </div>
+    <div class="deliverables-row fi d3">
+      <div class="label" style="margin-bottom:10px">Ключевые результаты</div>
+      <ul class="del-list">
+        <li>Маркетинговая стратегия</li>
+        <li>Дизайн процесса продаж</li>
+        <li>План предпродажной кампании</li>
+        <li>Оргструктура с планом масштабирования</li>
+        <li>Процесс найма и гайды</li>
+        <li>Фреймворк стратегии комьюнити</li>
+        <li>Плейбук удержания</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- СЛАЙД 8: КОМПЛАЕНС И МАСШТАБИРОВАНИЕ -->
+<div class="slide" data-slide="7">
+  <div class="slide-inner">
+    <div class="cluster-header fi d1">
+      <span class="cluster-badge badge-silver">Направление 4</span>
+      <h2 style="margin-bottom:0">Комплаенс и масштабирование</h2>
+    </div>
+    <div class="areas-row fi d2">
+      <div class="area-card">
+        <h3>Юридические вопросы</h3>
+        <p>Контрактная рамка для клиентов, страхование, регуляторный комплаенс (пожарная безопасность, доступность, охрана здоровья), защита данных, календарь проверок</p>
+      </div>
+      <div class="area-card">
+        <h3>Исследование рынка</h3>
+        <p>Анализ рынка Израиля, глубокое исследование малоформатного сегмента, глобальные бенчмарки, скоринг конкурентов, оценка спроса, прогнозы трендов</p>
+      </div>
+      <div class="area-card">
+        <h3>Масштабирование и сеть</h3>
+        <p>Плейбук масштабирования (1→3→10 локаций), единство бренда, сетевые эффекты, план централизации, KPI-дашборды для принятия решений</p>
+      </div>
+    </div>
+    <div class="deliverables-row fi d3">
+      <div class="label" style="margin-bottom:10px">Ключевые результаты</div>
+      <ul class="del-list">
+        <li>Контрактная рамка</li>
+        <li>Календарь комплаенса</li>
+        <li>Отчёт по исследованию рынка</li>
+        <li>Карта конкурентов</li>
+        <li>Оценка спроса</li>
+        <li>Дорожная карта масштабирования</li>
+        <li>Дизайн KPI-дашборда</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- СЛАЙД 9: ДОПОЛНИТЕЛЬНЫЕ МОДУЛИ -->
+<div class="slide" data-slide="8">
+  <div class="slide-inner centered">
+    <h2 class="fi d1">Дополнительные модули</h2>
+    <p class="subtitle fi d2">Доступны по мере необходимости — оплачиваются отдельно</p>
+    <div class="modules-grid fi d3">
+      <div class="module-card">
+        <div class="module-letter">A</div>
+        <h3>Привлечение инвестиций</h3>
+        <p>Питч-дек, материалы для инвесторов, структуры сделок, финансовые проекции, таргетирование инвесторов, подготовка к питчу</p>
+        <div class="module-tag">Отдельный проект</div>
+      </div>
+      <div class="module-card">
+        <div class="module-letter">B</div>
+        <h3>Стратегическое видение и культура</h3>
+        <p>Фасилитация стратегических сессий, видение и миссия, ценности компании, фреймворк OKR, система мотивации и бонусов</p>
+        <div class="module-tag">Отдельный проект</div>
+      </div>
+      <div class="module-card">
+        <div class="module-letter">C</div>
+        <h3>AI и автоматизация</h3>
+        <p>Оценка готовности к AI, автоматизация процессов, AI-агенты для бизнес-функций, скоринг лидов, аналитика заполняемости, умное здание</p>
+        <div class="module-tag">Отдельный проект</div>
+      </div>
+    </div>
+    <p class="modules-note fi d4">Каждый модуль независим и может быть добавлен к основному пакету по запросу.</p>
+  </div>
+</div>
+
+<!-- СЛАЙД 10: ЛИНИЯ -->
+<div class="slide" data-slide="9">
+  <div class="slide-inner centered">
+    <h2 class="fi d1">Как разделена работа</h2>
+    <p class="subtitle fi d2">Чёткая граница между консалтингом и операциями</p>
+    <div class="line-grid fi d3">
+      <div class="line-col consultant">
+        <h3>Что даю я</h3>
+        <ul>
+          <li>Полная картина — структура бизнеса</li>
+          <li>Бизнес-модель, финансовая логика, позиционирование</li>
+          <li>Фреймворки, шаблоны, плейбуки</li>
+          <li>Исследование рынка, анализ конкурентов</li>
+          <li>Оргдизайн, описания ролей</li>
+          <li>Рекомендации по технологиям</li>
+          <li>KPI-таргеты и система измерения</li>
+        </ul>
+      </div>
+      <div class="line-col client">
+        <h3>Что делает ваша команда</h3>
+        <ul>
+          <li>Стратегические решения — видение, направление</li>
+          <li>Ежедневные операции, управление подрядчиками</li>
+          <li>Заполнение шаблонов реальными данными</li>
+          <li>Наём, управление, обучение людей</li>
+          <li>Внедрение, отслеживание, отчётность</li>
+          <li>Настройка и поддержка систем</li>
+          <li>Действия на основе рекомендаций</li>
+        </ul>
+      </div>
+    </div>
+    <div class="principle-bar fi d4">«Я строю машину. Вы её запускаете.»</div>
+  </div>
+</div>
+
+<!-- СЛАЙД 11: ФАЗЫ -->
+<div class="slide" data-slide="10">
+  <div class="slide-inner centered">
+    <h2 class="fi d1">Четыре фазы до запуска</h2>
+    <p class="subtitle fi d2">Структурированный процесс от исследования до открытия</p>
+    <div class="phases-row fi d3">
+      <div class="phase-card active" data-phase="0">
+        <div class="phase-num">Фаза 0</div>
+        <h3>Исследование</h3>
+        <div class="phase-desc">
+          Глубинные интервью с вами. Исследование рынка — Израиль + ваш конкретный район + глобальные бенчмарки. Конкурентный анализ.<br><br>
+          <strong style="color:var(--gold)">Результат:</strong> Отчёт по рынку + бриф клиента
+        </div>
+        <span class="phase-arrow">›</span>
+      </div>
+      <div class="phase-card" data-phase="1">
+        <div class="phase-num">Фаза 1</div>
+        <h3>Бизнес-фундамент</h3>
+        <div class="phase-desc">
+          Дизайн бизнес-модели. Финансовое моделирование — юнит-экономика, прогнозы на 3 года. Оценка локации. Рекомендация по продуктовому миксу.<br><br>
+          <strong style="color:var(--gold)">Результат:</strong> Бизнес-модель + финмодель + продуктовый бриф
+        </div>
+        <span class="phase-arrow">›</span>
+      </div>
+      <div class="phase-card" data-phase="2">
+        <div class="phase-num">Фаза 2</div>
+        <h3>Операционный чертёж</h3>
+        <div class="phase-desc">
+          Операционный плейбук. Оргструктура и план найма. Технологический стек. Стратегия продаж и маркетинга. Стратегия комьюнити.<br><br>
+          <strong style="color:var(--gold)">Результат:</strong> Опер. руководство + план найма + маркетинг
+        </div>
+        <span class="phase-arrow">›</span>
+      </div>
+      <div class="phase-card" data-phase="3">
+        <div class="phase-num">Фаза 3</div>
+        <h3>Поддержка запуска</h3>
+        <div class="phase-desc">
+          Стратегия предпродаж и поддержка реализации. Контроль вех строительства. Консультирование по найму. Оценка готовности к запуску.<br><br>
+          <strong style="color:var(--gold)">Результат:</strong> Чеклист запуска + результаты предпродаж
+        </div>
+      </div>
+    </div>
+    <p class="post-note fi d4">Пост-запускное сопровождение — ежемесячный обзор KPI, оптимизация, готовность к масштабированию — отдельный проект.</p>
+  </div>
+</div>
+
+<!-- СЛАЙД 12: СЛЕДУЮЩИЕ ШАГИ -->
+<div class="slide" data-slide="11">
+  <div class="slide-inner centered">
+    <h2 class="fi d1">Начнём</h2>
+    <p class="subtitle fi d2">Первый шаг — глубокое понимание вашей ситуации</p>
+    <div class="gold-line"></div>
+    <div class="steps-wrap">
+      <div class="step-card fi d3">
+        <div class="step-icon">01</div>
+        <div class="step-body">
+          <h3>Диагностическая сессия</h3>
+          <p>Глубокий разговор о вашей ситуации, целях, ограничениях, имеющихся активах и видении. Никаких общих вопросов — структурированный процесс, построенный на реальном опыте.</p>
+        </div>
+      </div>
+      <div class="step-card fi d4">
+        <div class="step-icon">28</div>
+        <div class="step-body">
+          <h3>Структурированный фреймворк</h3>
+          <p>28 целевых вопросов: видение, финансы, опыт, локация, рынок, операции, принятие решений. Каждый ответ формирует программу консалтинга.</p>
+        </div>
+      </div>
+      <div class="step-card fi d5">
+        <div class="step-icon">→</div>
+        <div class="step-body">
+          <h3>Первая рабочая сессия</h3>
+          <p>После диагностики мы строим вашу конкретную дорожную карту — что делать сначала, что может подождать, и где прячутся главные риски.</p>
+        </div>
+      </div>
+    </div>
+    <div class="cta-bar fi d6">
+      <div class="cta-text">Готов, когда вы готовы.</div>
+      <div class="cta-sub">Алекс Барафанов · barafanoff@gmail.com</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- НАВИГАЦИЯ -->
+<div class="nav-dots" id="navDots"></div>
+<div class="slide-counter" id="slideCounter">1 / 12</div>
+<div class="kbd-hint" id="kbdHint">← → или Пробел для навигации</div>
+
+<script>
+(function() {
+  'use strict';
+
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  const PARTICLE_COUNT = 45;
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  class Particle {
+    constructor() { this.reset(); }
+    reset() {
+      this.x = Math.random() * canvas.width;
+      this.y = Math.random() * canvas.height;
+      this.size = Math.random() * 1.5 + 0.5;
+      this.speedX = (Math.random() - 0.5) * 0.15;
+      this.speedY = (Math.random() - 0.5) * 0.12;
+      this.opacity = Math.random() * 0.2 + 0.05;
+      this.pulse = Math.random() * Math.PI * 2;
+      this.pulseSpeed = Math.random() * 0.005 + 0.002;
+    }
+    update() {
+      this.x += this.speedX;
+      this.y += this.speedY;
+      this.pulse += this.pulseSpeed;
+      if (this.x < -10 || this.x > canvas.width + 10 || this.y < -10 || this.y > canvas.height + 10) this.reset();
+    }
+    draw() {
+      const o = this.opacity + Math.sin(this.pulse) * 0.05;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(91, 170, 239, ${Math.max(0, o)})`;
+      ctx.fill();
+    }
+  }
+
+  for (let i = 0; i < PARTICLE_COUNT; i++) particles.push(new Particle());
+
+  function animateParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => { p.update(); p.draw(); });
+    requestAnimationFrame(animateParticles);
+  }
+  animateParticles();
+
+  const slides = document.querySelectorAll('.slide');
+  const totalSlides = slides.length;
+  let current = 0;
+  let transitioning = false;
+
+  const navDotsContainer = document.getElementById('navDots');
+  const slideCounter = document.getElementById('slideCounter');
+  const progressBar = document.getElementById('progressBar');
+  const kbdHint = document.getElementById('kbdHint');
+
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', 'Перейти к слайду ' + (i + 1));
+    dot.addEventListener('click', () => goToSlide(i));
+    navDotsContainer.appendChild(dot);
+  }
+
+  function updateUI() {
+    const dots = navDotsContainer.querySelectorAll('.nav-dot');
+    dots.forEach((d, i) => d.classList.toggle('active', i === current));
+    slideCounter.textContent = (current + 1) + ' / ' + totalSlides;
+    progressBar.style.width = ((current + 1) / totalSlides * 100) + '%';
+  }
+
+  function goToSlide(n) {
+    if (n === current || n < 0 || n >= totalSlides || transitioning) return;
+    transitioning = true;
+    const prev = slides[current];
+    slides.forEach(s => s.classList.remove('active', 'prev'));
+    if (n > current) prev.classList.add('prev');
+    slides[n].classList.add('active');
+    current = n;
+    updateUI();
+    if (current === 1) setTimeout(() => animateCounters(), 400);
+    setTimeout(() => { transitioning = false; }, 700);
+  }
+
+  function nextSlide() { goToSlide(current + 1); }
+  function prevSlide() { goToSlide(current - 1); }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'ArrowDown') { e.preventDefault(); nextSlide(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prevSlide(); }
+    kbdHint.classList.add('hide');
+  });
+
+  let touchStartX = 0, touchStartY = 0;
+  document.addEventListener('touchstart', function(e) { touchStartX = e.changedTouches[0].screenX; touchStartY = e.changedTouches[0].screenY; });
+  document.addEventListener('touchend', function(e) {
+    const dx = e.changedTouches[0].screenX - touchStartX;
+    const dy = e.changedTouches[0].screenY - touchStartY;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) { dx < 0 ? nextSlide() : prevSlide(); }
+  });
+
+  let countersAnimated = false;
+  function animateCounters() {
+    if (countersAnimated) return;
+    countersAnimated = true;
+    const counters = document.querySelectorAll('[data-slide="1"] .metric-number');
+    counters.forEach(el => {
+      const target = parseInt(el.getAttribute('data-count'));
+      const suffix = el.getAttribute('data-suffix') || '';
+      const prefix = el.getAttribute('data-prefix') || '';
+      const special = el.getAttribute('data-special');
+      const duration = 1800;
+      const start = performance.now();
+      function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+      function update(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const value = Math.round(easeOut(progress) * target);
+        if (special === 'rank') { el.textContent = prefix + value + (value > 0 ? suffix : ''); }
+        else { el.textContent = prefix + value.toLocaleString() + suffix; }
+        if (progress < 1) requestAnimationFrame(update);
+      }
+      requestAnimationFrame(update);
+    });
+  }
+
+  const phaseCards = document.querySelectorAll('.phase-card');
+  phaseCards.forEach(card => {
+    card.addEventListener('click', function() {
+      phaseCards.forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  updateUI();
+  setTimeout(() => kbdHint.classList.add('hide'), 6000);
+})();
+</script>
+
+</body>
+</html>
